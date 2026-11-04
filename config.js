@@ -31,5 +31,14 @@ const MATERNA_CONFIG = {
   parcelValue: 1621.00,
   totalBenefitValue: 6484.00,
   commissionPercentage: 30, // 30% no êxito
-  estimatedCommission: 1945.20 // R$ 1.945,20 por contrato
+  estimatedCommission: 1945.20, // R$ 1.945,20 por contrato
+  inssContributionCost: 178.90, // Custo da guia avulsa adiantada por Nathália (reembolso integral, fora do lucro)
+
+  // Divisão de Lucro Líquido entre os Sócios / Parceiros
+  profitSplit: {
+    nathalia: { name: "Nathália", role: "Advogada", percentage: 45.0 },
+    amanda: { name: "Amanda", role: "Rosto da Empresa", percentage: 22.5 },
+    rafael: { name: "Rafael", role: "Produtor de Conteúdo", percentage: 22.5 },
+    kadu: { name: "Kadu", role: "Gestor de Tráfego", percentage: 10.0 }
+  }
 };
