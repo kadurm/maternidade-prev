@@ -175,14 +175,27 @@
 
     <!-- ================= RATEIO OFICIAL DOS SÓCIOS ================= -->
     <div class="mt-4 bg-white p-4 rounded-2xl shadow-sm border border-slate-200">
-      <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+      <div class="flex flex-wrap items-center justify-between gap-3 mb-3 border-b border-slate-100 pb-3">
         <div class="flex items-center gap-2">
           <span class="text-lg">🤝</span>
-          <span class="text-xs font-black uppercase text-slate-800 tracking-wider">Divisão de Lucro Líquido dos Sócios</span>
-          <span class="text-[10px] bg-emerald-100 text-emerald-800 font-extrabold px-2 py-0.5 rounded-full">Base: 30% do Benefício</span>
+          <div>
+            <span class="text-xs font-black uppercase text-slate-800 tracking-wider block">Divisão de Lucro Líquido Real</span>
+            <span class="text-[11px] text-slate-500 font-medium">Equação: <strong class="text-slate-800 font-bold">Honorários (30%) - Verba de Mídia (Kadu) = Lucro Líquido</strong></span>
+          </div>
         </div>
+        
+        <!-- Controle de Verba de Mídia por Contrato -->
+        <div class="flex items-center gap-2 bg-blue-50 border border-blue-200 px-3 py-1.5 rounded-xl">
+          <span class="text-[11px] font-bold text-blue-900">📢 Custo Médio Tráfego / Contrato:</span>
+          <div class="flex items-center">
+            <span class="text-xs font-bold text-blue-900 mr-1">R$</span>
+            <input type="number" id="globalMediaCost" value="200.00" oninput="updateDashboardMetrics()" class="w-16 bg-white border border-blue-300 rounded-lg px-1.5 py-0.5 text-xs font-black text-blue-950 focus:outline-none focus:ring-1 focus:ring-blue-600">
+          </div>
+          <span class="text-[10px] text-blue-700 font-medium">(Retorna 100% p/ Kadu)</span>
+        </div>
+
         <div class="text-[11px] text-slate-600 font-medium">
-          Guia INSS Avulsa: <strong class="text-slate-900 font-black">R$ 178,90</strong> <span class="text-slate-400">(reembolso integral Nathália/Fundo de Mídia - fora do lucro)</span>
+          Guia INSS Avulsa: <strong class="text-slate-900 font-black">R$ 178,90</strong> <span class="text-slate-400">(reembolso integral Nathália)</span>
         </div>
       </div>
 
@@ -191,10 +204,11 @@
         <div class="bg-purple-50/80 border border-purple-200 p-3 rounded-xl">
           <div class="flex justify-between items-center text-purple-900 mb-1">
             <span class="text-xs font-black">Nathália</span>
-            <span class="text-[10px] bg-purple-200 text-purple-800 font-black px-1.5 py-0.5 rounded">45% • Advogada</span>
+            <span class="text-[10px] bg-purple-200 text-purple-800 font-black px-1.5 py-0.5 rounded">45% • Jurídico</span>
           </div>
-          <div class="text-sm font-black text-purple-900" id="dash_split_nathalia">R$ 875,34</div>
+          <div class="text-sm font-black text-purple-900" id="dash_split_nathalia">R$ 785,34</div>
           <div class="text-[10px] text-purple-700">Total Carteira: <strong id="dash_total_nathalia">R$ 0</strong></div>
+          <div class="text-[9px] text-purple-600 mt-0.5">+ Reembolso da Guia (R$ 178,90)</div>
         </div>
 
         <!-- Amanda -->
@@ -203,8 +217,9 @@
             <span class="text-xs font-black">Amanda</span>
             <span class="text-[10px] bg-pink-200 text-pink-800 font-black px-1.5 py-0.5 rounded">22,5% • Rosto</span>
           </div>
-          <div class="text-sm font-black text-pink-900" id="dash_split_amanda">R$ 437,67</div>
+          <div class="text-sm font-black text-pink-900" id="dash_split_amanda">R$ 392,67</div>
           <div class="text-[10px] text-pink-700">Total Carteira: <strong id="dash_total_amanda">R$ 0</strong></div>
+          <div class="text-[9px] text-slate-400 mt-0.5">22,5% do Lucro Líquido</div>
         </div>
 
         <!-- Rafael -->
@@ -213,18 +228,20 @@
             <span class="text-xs font-black">Rafael</span>
             <span class="text-[10px] bg-amber-200 text-amber-800 font-black px-1.5 py-0.5 rounded">22,5% • Conteúdo</span>
           </div>
-          <div class="text-sm font-black text-amber-900" id="dash_split_rafael">R$ 437,67</div>
+          <div class="text-sm font-black text-amber-900" id="dash_split_rafael">R$ 392,67</div>
           <div class="text-[10px] text-amber-700">Total Carteira: <strong id="dash_total_rafael">R$ 0</strong></div>
+          <div class="text-[9px] text-slate-400 mt-0.5">22,5% do Lucro Líquido</div>
         </div>
 
         <!-- Kadu -->
-        <div class="bg-blue-50/80 border border-blue-200 p-3 rounded-xl">
+        <div class="bg-blue-50/90 border-2 border-blue-400 p-3 rounded-xl shadow-xs">
           <div class="flex justify-between items-center text-blue-900 mb-1">
             <span class="text-xs font-black">Kadu</span>
-            <span class="text-[10px] bg-blue-200 text-blue-800 font-black px-1.5 py-0.5 rounded">10% • Tráfego</span>
+            <span class="text-[10px] bg-blue-600 text-white font-black px-1.5 py-0.5 rounded">10% + Reembolso Tráfego</span>
           </div>
-          <div class="text-sm font-black text-blue-900" id="dash_split_kadu">R$ 194,52</div>
-          <div class="text-[10px] text-blue-700">Total Carteira: <strong id="dash_total_kadu">R$ 0</strong></div>
+          <div class="text-sm font-black text-blue-950" id="dash_split_kadu">R$ 374,52</div>
+          <div class="text-[10px] text-blue-800">Total Carteira: <strong id="dash_total_kadu">R$ 0</strong></div>
+          <div class="text-[9px] text-blue-700 font-bold mt-0.5">10% (R$ 174,52) + R$ 200 (Mídia)</div>
         </div>
       </div>
     </div>
@@ -471,26 +488,32 @@
         <!-- ================= ABA 2: GESTÃO DE CONTRATOS & COMISSÕES ================= -->
         <div id="tabContent_contrato" class="space-y-5 hidden">
           
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
             
-            <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200">
-              <label class="block text-xs font-bold text-slate-700 mb-1">Valor Estimado do Benefício (R$):</label>
-              <input type="number" id="contractBenefitValue" value="6484.00" oninput="calculateCommission()" class="w-full bg-white border border-slate-300 rounded-xl p-2.5 text-sm font-black focus:ring-2 focus:ring-brand-600">
-              <span class="text-[10px] text-slate-500 mt-1 block">Base auditada: 4 parcelas de R$ 1.621,00 pelo INSS</span>
+            <div class="bg-slate-50 p-3.5 rounded-2xl border border-slate-200">
+              <label class="block text-xs font-bold text-slate-700 mb-1">Valor Benefício (R$):</label>
+              <input type="number" id="contractBenefitValue" value="6484.00" oninput="calculateCommission()" class="w-full bg-white border border-slate-300 rounded-xl p-2 text-xs font-black focus:ring-2 focus:ring-brand-600">
+              <span class="text-[10px] text-slate-500 mt-1 block">4x R$ 1.621 (INSS)</span>
             </div>
 
-            <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200">
-              <label class="block text-xs font-bold text-slate-700 mb-1">% de Comissão de Intermediação:</label>
-              <input type="number" id="contractCommissionPct" value="30" oninput="calculateCommission()" class="w-full bg-white border border-slate-300 rounded-xl p-2.5 text-sm font-black focus:ring-2 focus:ring-brand-600">
-              <span class="text-[10px] text-slate-500 mt-1 block">Praxe contratual: 30% no êxito</span>
+            <div class="bg-slate-50 p-3.5 rounded-2xl border border-slate-200">
+              <label class="block text-xs font-bold text-slate-700 mb-1">% Honorários:</label>
+              <input type="number" id="contractCommissionPct" value="30" oninput="calculateCommission()" class="w-full bg-white border border-slate-300 rounded-xl p-2 text-xs font-black focus:ring-2 focus:ring-brand-600">
+              <span class="text-[10px] text-slate-500 mt-1 block">Bruto: R$ 1.945,20</span>
             </div>
 
-            <div class="bg-emerald-50 p-4 rounded-2xl border-2 border-emerald-300">
-              <label class="block text-xs font-black text-emerald-900 mb-1">Sua Comissão Projetada (R$):</label>
-              <div id="contractCommissionValue" class="text-xl font-black text-emerald-700 pt-1">
-                R$ 1.945,20
+            <div class="bg-blue-50/70 p-3.5 rounded-2xl border border-blue-200">
+              <label class="block text-xs font-black text-blue-900 mb-1">Verba de Mídia / Tráfego (R$):</label>
+              <input type="number" id="contractMediaCost" value="200.00" oninput="calculateCommission()" class="w-full bg-white border border-blue-300 rounded-xl p-2 text-xs font-black text-blue-950 focus:ring-2 focus:ring-blue-600">
+              <span class="text-[10px] text-blue-700 mt-1 block font-bold">Reembolso 100% p/ Kadu</span>
+            </div>
+
+            <div class="bg-emerald-50 p-3.5 rounded-2xl border-2 border-emerald-300">
+              <label class="block text-xs font-black text-emerald-900 mb-1">Lucro Líquido Real (R$):</label>
+              <div id="contractCommissionValue" class="text-base font-black text-emerald-700 pt-1">
+                R$ 1.745,20
               </div>
-              <span class="text-[10px] text-emerald-800 font-semibold mt-1 block">Recebimento após saque do benefício</span>
+              <span class="text-[10px] text-emerald-800 font-semibold mt-0.5 block">(Honorários - Mídia)</span>
             </div>
 
           </div>
@@ -826,27 +849,56 @@
       });
     }
 
-    // Atualizar Métricas do Topo e Rateio dos Sócios
+    // Atualizar Métricas do Topo e Rateio dos Sócios considerando a Verba de Mídia
     function updateDashboardMetrics() {
       const total = currentLeads.length;
       const urgentes = currentLeads.filter(l => (l.partoMes || "").toLowerCase().includes("novembro")).length;
       const inProcess = currentLeads.filter(l => l.status === 'advogado' || l.status === 'documentos').length;
       
-      const totalComissao = currentLeads
-        .filter(l => l.status !== 'perdido')
-        .reduce((acc, l) => acc + (l.contrato?.valorComissao || 1945.20), 0);
+      const mediaUnit = parseFloat(document.getElementById("globalMediaCost")?.value) || 200.00;
+
+      // Honorários brutos (30% sobre R$ 6.484 = R$ 1.945,20 por lead qualificado)
+      const validLeads = currentLeads.filter(l => l.status !== 'perdido');
+      const totalHonorarios = validLeads.reduce((acc, l) => acc + (l.contrato?.valorComissao || 1945.20), 0);
+      
+      // Total de Mídia investido por Kadu a ser reembolsado
+      const totalMidiaReembolso = validLeads.length * mediaUnit;
+
+      // Lucro Líquido Real = Honorários - Mídia
+      const totalLucroLiquido = Math.max(0, totalHonorarios - totalMidiaReembolso);
 
       document.getElementById("metricTotalLeads").innerText = total;
       document.getElementById("metricUrgentLeads").innerText = urgentes;
       document.getElementById("metricInProcess").innerText = inProcess;
-      document.getElementById("metricCommissions").innerText = "R$ " + totalComissao.toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+      document.getElementById("metricCommissions").innerText = "R$ " + totalLucroLiquido.toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
 
-      // Atualizar Rateio Geral da Carteira dos Sócios
-      const totNathalia = totalComissao * 0.45;
-      const totAmanda = totalComissao * 0.225;
-      const totRafael = totalComissao * 0.225;
-      const totKadu = totalComissao * 0.10;
+      // Rateio por Sócio do Lucro Líquido
+      const unitLucroLiquido = Math.max(0, 1945.20 - mediaUnit);
+      
+      // Nathália: 45% do Lucro Líquido
+      const splitUnitNathalia = unitLucroLiquido * 0.45;
+      const totNathalia = totalLucroLiquido * 0.45;
 
+      // Amanda: 22,5% do Lucro Líquido
+      const splitUnitAmanda = unitLucroLiquido * 0.225;
+      const totAmanda = totalLucroLiquido * 0.225;
+
+      // Rafael: 22,5% do Lucro Líquido
+      const splitUnitRafael = unitLucroLiquido * 0.225;
+      const totRafael = totalLucroLiquido * 0.225;
+
+      // Kadu: 10% do Lucro Líquido + 100% Reembolso da Verba de Mídia
+      const splitUnitKaduLucro = unitLucroLiquido * 0.10;
+      const splitUnitKaduTotal = splitUnitKaduLucro + mediaUnit;
+      const totKadu = (totalLucroLiquido * 0.10) + totalMidiaReembolso;
+
+      // Atualizar cards unitários no Dashboard
+      if (document.getElementById("dash_split_nathalia")) document.getElementById("dash_split_nathalia").innerText = "R$ " + splitUnitNathalia.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+      if (document.getElementById("dash_split_amanda")) document.getElementById("dash_split_amanda").innerText = "R$ " + splitUnitAmanda.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+      if (document.getElementById("dash_split_rafael")) document.getElementById("dash_split_rafael").innerText = "R$ " + splitUnitRafael.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+      if (document.getElementById("dash_split_kadu")) document.getElementById("dash_split_kadu").innerText = "R$ " + splitUnitKaduTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+
+      // Atualizar totais acumulados da carteira
       if (document.getElementById("dash_total_nathalia")) document.getElementById("dash_total_nathalia").innerText = "R$ " + totNathalia.toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
       if (document.getElementById("dash_total_amanda")) document.getElementById("dash_total_amanda").innerText = "R$ " + totAmanda.toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
       if (document.getElementById("dash_total_rafael")) document.getElementById("dash_total_rafael").innerText = "R$ " + totRafael.toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
@@ -889,6 +941,8 @@
       const pct = lead.contrato?.percentual || 30;
       document.getElementById("contractBenefitValue").value = benef;
       document.getElementById("contractCommissionPct").value = pct;
+      const midiaUnit = lead.contrato?.verbaMidia || parseFloat(document.getElementById("globalMediaCost")?.value) || 200.00;
+      if (document.getElementById("contractMediaCost")) document.getElementById("contractMediaCost").value = midiaUnit;
       calculateCommission();
       updateContractButtons(lead.contrato?.status || 'pendente');
       generateContractDraft(lead);
@@ -1018,41 +1072,51 @@
       renderTimeline(lead);
     }
 
-    // Cálculo de Comissões e Split de Sócios deste Contrato
+    // Cálculo de Comissões e Split de Sócios com Reembolso de Mídia (Kadu) e Guia (Nathália)
     function calculateCommission() {
       const benef = parseFloat(document.getElementById("contractBenefitValue").value) || 0;
       const pct = parseFloat(document.getElementById("contractCommissionPct").value) || 0;
-      const val = (benef * pct) / 100;
-      const guiaINSS = 178.90;
-      const totalRetido = val + guiaINSS;
+      const midia = parseFloat(document.getElementById("contractMediaCost")?.value) || 200.00;
+      
+      const honorarios = (benef * pct) / 100; // R$ 1.945,20
+      const guiaINSS = 178.90; // Reembolso Nathália
+      const totalRetido = honorarios + guiaINSS; // R$ 2.124,10
 
-      document.getElementById("contractCommissionValue").innerText = "R$ " + val.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+      // Lucro Líquido Real = Honorários - Verba de Mídia
+      const lucroLiquidoReal = Math.max(0, honorarios - midia); // Ex: R$ 1.945,20 - R$ 200,00 = R$ 1.745,20
+
+      document.getElementById("contractCommissionValue").innerText = "R$ " + lucroLiquidoReal.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
       if (document.getElementById("modalTotalRetido")) {
         document.getElementById("modalTotalRetido").innerText = "R$ " + totalRetido.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
       }
 
-      // Splits individuais (45%, 22.5%, 22.5%, 10%)
-      const splitNathalia = val * 0.45;
-      const splitAmanda = val * 0.225;
-      const splitRafael = val * 0.225;
-      const splitKadu = val * 0.10;
+      // Splits individuais do Lucro Líquido Real
+      const splitNathalia = lucroLiquidoReal * 0.45;
+      const splitAmanda = lucroLiquidoReal * 0.225;
+      const splitRafael = lucroLiquidoReal * 0.225;
+      const splitKaduLucro = lucroLiquidoReal * 0.10;
+      const splitKaduTotal = splitKaduLucro + midia; // 10% do Lucro + 100% Reembolso da Verba de Mídia
 
       if (document.getElementById("modalSplit_nathalia")) document.getElementById("modalSplit_nathalia").innerText = "R$ " + splitNathalia.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
       if (document.getElementById("modalSplit_amanda")) document.getElementById("modalSplit_amanda").innerText = "R$ " + splitAmanda.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
       if (document.getElementById("modalSplit_rafael")) document.getElementById("modalSplit_rafael").innerText = "R$ " + splitRafael.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
-      if (document.getElementById("modalSplit_kadu")) document.getElementById("modalSplit_kadu").innerText = "R$ " + splitKadu.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+      if (document.getElementById("modalSplit_kadu")) document.getElementById("modalSplit_kadu").innerText = "R$ " + splitKaduTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
 
       const lead = currentLeads.find(l => l.id === selectedLeadId);
       if (lead) {
         lead.contrato = lead.contrato || {};
         lead.contrato.valorBeneficio = benef;
         lead.contrato.percentual = pct;
-        lead.contrato.valorComissao = val;
+        lead.contrato.valorComissao = honorarios;
+        lead.contrato.verbaMidia = midia;
+        lead.contrato.lucroLiquido = lucroLiquidoReal;
         lead.contrato.split = {
           nathalia: splitNathalia,
           amanda: splitAmanda,
           rafael: splitRafael,
-          kadu: splitKadu,
+          kaduLucro: splitKaduLucro,
+          kaduMidia: midia,
+          kaduTotal: splitKaduTotal,
           guiaINSS: guiaINSS
         };
         generateContractDraft(lead);

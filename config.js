@@ -33,8 +33,9 @@ const MATERNA_CONFIG = {
   commissionPercentage: 30, // 30% no êxito
   estimatedCommission: 1945.20, // R$ 1.945,20 por contrato
   inssContributionCost: 178.90, // Custo da guia avulsa adiantada por Nathália (reembolso integral, fora do lucro)
+  mediaCostPerContract: 200.00, // Custo médio de tráfego/anúncios investido por Kadu (reembolso integral para Kadu ANTES do lucro)
 
-  // Divisão de Lucro Líquido entre os Sócios / Parceiros
+  // Divisão de Lucro Líquido REAL entre os Sócios / Parceiros (após deduzir a Verba de Mídia)
   profitSplit: {
     nathalia: { name: "Nathália", role: "Advogada", percentage: 45.0 },
     amanda: { name: "Amanda", role: "Rosto da Empresa", percentage: 22.5 },
