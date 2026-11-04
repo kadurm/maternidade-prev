@@ -1,0 +1,1120 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MaternidadePrev | CRM de Atendimento & Gestão de Contratos</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50: '#ecfdf5',
+              100: '#d1fae5',
+              600: '#059669',
+              700: '#047857',
+              800: '#065f46',
+              900: '#064e3b',
+              dark: '#0a3d2c'
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Estilos do Kanban e Scrollbar customizada */
+    .kanban-col {
+      min-width: 320px;
+      max-width: 320px;
+    }
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+    .lead-card {
+      transition: all 0.15s ease;
+    }
+    .lead-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 16px -4px rgba(0, 0, 0, 0.1);
+    }
+  </style>
+
+  <script src="config.js"></script>
+</head>
+<body class="bg-slate-100 text-slate-900 font-sans min-h-screen flex flex-col antialiased">
+
+  <!-- ================= TOPBAR ================= -->
+  <header class="bg-brand-900 text-white shadow-md sticky top-0 z-40 border-b border-brand-800">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+      
+      <!-- Logo & Título -->
+      <div class="flex items-center gap-3">
+        <img src="assets/logo.jpg" alt="Logo" class="w-10 h-10 rounded-full border border-emerald-400 object-cover">
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="font-black text-lg tracking-tight">Maternidade<span class="text-emerald-400">Prev</span></span>
+            <span class="bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[10px] uppercase font-extrabold px-2 py-0.5 rounded-full">CRM • Operação</span>
+          </div>
+          <span class="text-xs text-slate-300 block">Gestão de Contratos & Follow-up de Qualificação</span>
+        </div>
+      </div>
+
+      <!-- Informações de Plantão / Mês Foco -->
+      <div class="flex items-center gap-2 sm:gap-4">
+        <div class="hidden md:flex flex-col text-right">
+          <span class="text-[11px] text-slate-300 font-medium">Mês Foco da Reta Final:</span>
+          <span class="text-xs font-black text-amber-300 uppercase flex items-center gap-1 justify-end">
+            <span class="w-2 h-2 rounded-full bg-amber-400 animate-ping"></span>
+            <span id="headerMonthText">Novembro</span>
+          </span>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <button onclick="openNewLeadModal()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs py-2 px-3 sm:px-4 rounded-xl shadow flex items-center gap-1.5 transition">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path></svg>
+            <span>Novo Lead</span>
+          </button>
+
+          <button onclick="generateSampleLeads()" title="Gerar leads de teste para simulação" class="bg-brand-800 hover:bg-brand-700 text-slate-200 border border-brand-700 text-xs py-2 px-3 rounded-xl transition font-semibold">
+            🧪 Testes
+          </button>
+
+          <button onclick="exportLeadsCSV()" title="Exportar leads em planilha CSV" class="bg-brand-800 hover:bg-brand-700 text-slate-200 border border-brand-700 text-xs py-2 px-3 rounded-xl transition font-semibold">
+            📥 CSV
+          </button>
+
+          <a href="index.html" target="_blank" class="text-xs text-emerald-300 hover:text-white underline font-semibold ml-2">
+            Ver LP ↗
+          </a>
+        </div>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- ================= DASHBOARD DE MÉTRICAS ================= -->
+  <section class="max-w-7xl mx-auto px-4 pt-6 pb-2 w-full">
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+      
+      <!-- Card 1: Total Leads -->
+      <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200">
+        <div class="flex items-center justify-between text-slate-500 mb-1">
+          <span class="text-xs font-bold uppercase tracking-wider">Total de Leads</span>
+          <span class="text-lg">👥</span>
+        </div>
+        <div class="flex items-baseline gap-2">
+          <span id="metricTotalLeads" class="text-2xl font-black text-slate-900">0</span>
+          <span class="text-[11px] text-slate-500 font-medium">gestantes cadastradas</span>
+        </div>
+      </div>
+
+      <!-- Card 2: Urgência Máxima (Mês Atual) -->
+      <div class="bg-red-50 p-4 rounded-2xl shadow-sm border-2 border-red-200">
+        <div class="flex items-center justify-between text-red-700 mb-1">
+          <span class="text-xs font-extrabold uppercase tracking-wider flex items-center gap-1">
+            <span class="w-2 h-2 rounded-full bg-red-600 animate-ping"></span>
+            Parto em <span class="current-month-label">Novembro</span>
+          </span>
+          <span class="text-lg">🚨</span>
+        </div>
+        <div class="flex items-baseline gap-2">
+          <span id="metricUrgentLeads" class="text-2xl font-black text-red-600">0</span>
+          <span class="text-[11px] text-red-700 font-semibold">prioridade máxima</span>
+        </div>
+      </div>
+
+      <!-- Card 3: Contratos / Em Andamento com Advogado -->
+      <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200">
+        <div class="flex items-center justify-between text-slate-500 mb-1">
+          <span class="text-xs font-bold uppercase tracking-wider">Com Advogado / INSS</span>
+          <span class="text-lg">⚖️</span>
+        </div>
+        <div class="flex items-baseline gap-2">
+          <span id="metricInProcess" class="text-2xl font-black text-brand-700">0</span>
+          <span class="text-[11px] text-slate-500 font-medium">processos em curso</span>
+        </div>
+      </div>
+
+      <!-- Card 4: Comissões Estimadas -->
+      <div class="bg-emerald-50 p-4 rounded-2xl shadow-sm border-2 border-emerald-200">
+        <div class="flex items-center justify-between text-emerald-800 mb-1">
+          <span class="text-xs font-extrabold uppercase tracking-wider">Comissões Projetadas</span>
+          <span class="text-lg">💰</span>
+        </div>
+        <div class="flex items-baseline gap-2">
+          <span id="metricCommissions" class="text-2xl font-black text-emerald-700">R$ 0</span>
+          <span class="text-[11px] text-emerald-800 font-semibold">(30% p/ caso)</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ================= BARRA DE CONTROLE / FILTROS ================= -->
+  <div class="max-w-7xl mx-auto px-4 py-3 w-full flex flex-wrap items-center justify-between gap-3">
+    <div class="flex items-center gap-2 flex-1 max-w-md">
+      <div class="relative w-full">
+        <input type="text" id="searchInput" oninput="filterLeads()" placeholder="Buscar por nome ou telefone..." class="w-full bg-white border border-slate-300 rounded-xl px-3.5 py-2 pl-9 text-xs sm:text-sm font-medium focus:ring-2 focus:ring-brand-600 focus:outline-none shadow-sm">
+        <svg class="w-4 h-4 text-slate-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+      </div>
+    </div>
+
+    <!-- Filtro de Mês -->
+    <div class="flex items-center gap-2">
+      <label class="text-xs font-bold text-slate-600">Filtrar por Parto:</label>
+      <select id="monthFilter" onchange="filterLeads()" class="bg-white border border-slate-300 text-slate-800 text-xs rounded-xl p-2 font-semibold focus:ring-2 focus:ring-brand-600">
+        <option value="todos">Todos os Meses</option>
+        <option value="Novembro" selected>Novembro (Reta Final)</option>
+        <option value="Dezembro">Dezembro</option>
+        <option value="Janeiro">Janeiro ou Depois</option>
+        <option value="JaNasceu">Bebê já nasceu</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- ================= KANBAN DO FUNIL DE ATENDIMENTO ================= -->
+  <main class="flex-1 max-w-7xl mx-auto px-4 pb-12 w-full overflow-x-auto">
+    <div class="flex gap-4 items-start min-w-[1920px] pb-6" id="kanbanBoard">
+      
+      <!-- COLUNA 1: NOVOS LEADS (TRIAGEM) -->
+      <div class="kanban-col bg-slate-200/70 rounded-2xl p-3 flex flex-col max-h-[calc(100vh-260px)]">
+        <div class="flex items-center justify-between pb-2 mb-2 border-b border-slate-300">
+          <div class="flex items-center gap-1.5">
+            <span class="w-2.5 h-2.5 rounded-full bg-blue-500"></span>
+            <span class="text-xs font-black uppercase text-slate-800">1. Novos Leads</span>
+          </div>
+          <span id="count_triagem" class="bg-blue-100 text-blue-800 text-[11px] font-black px-2 py-0.5 rounded-full">0</span>
+        </div>
+        <div id="col_triagem" class="space-y-3 overflow-y-auto flex-1 pr-1"></div>
+      </div>
+
+      <!-- COLUNA 2: EM QUALIFICAÇÃO / FOLLOW-UP -->
+      <div class="kanban-col bg-slate-200/70 rounded-2xl p-3 flex flex-col max-h-[calc(100vh-260px)]">
+        <div class="flex items-center justify-between pb-2 mb-2 border-b border-slate-300">
+          <div class="flex items-center gap-1.5">
+            <span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
+            <span class="text-xs font-black uppercase text-slate-800">2. Em Atendimento</span>
+          </div>
+          <span id="count_qualificacao" class="bg-amber-100 text-amber-800 text-[11px] font-black px-2 py-0.5 rounded-full">0</span>
+        </div>
+        <div id="col_qualificacao" class="space-y-3 overflow-y-auto flex-1 pr-1"></div>
+      </div>
+
+      <!-- COLUNA 3: DOCUMENTOS SOLICITADOS -->
+      <div class="kanban-col bg-slate-200/70 rounded-2xl p-3 flex flex-col max-h-[calc(100vh-260px)]">
+        <div class="flex items-center justify-between pb-2 mb-2 border-b border-slate-300">
+          <div class="flex items-center gap-1.5">
+            <span class="w-2.5 h-2.5 rounded-full bg-purple-500"></span>
+            <span class="text-xs font-black uppercase text-slate-800">3. Aguard. Documentos</span>
+          </div>
+          <span id="count_documentos" class="bg-purple-100 text-purple-800 text-[11px] font-black px-2 py-0.5 rounded-full">0</span>
+        </div>
+        <div id="col_documentos" class="space-y-3 overflow-y-auto flex-1 pr-1"></div>
+      </div>
+
+      <!-- COLUNA 4: COM ADVOGADO PARCEIRO / PROTOCOLO -->
+      <div class="kanban-col bg-slate-200/70 rounded-2xl p-3 flex flex-col max-h-[calc(100vh-260px)]">
+        <div class="flex items-center justify-between pb-2 mb-2 border-b border-slate-300">
+          <div class="flex items-center gap-1.5">
+            <span class="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>
+            <span class="text-xs font-black uppercase text-slate-800">4. Advogado Parceiro</span>
+          </div>
+          <span id="count_advogado" class="bg-emerald-100 text-emerald-800 text-[11px] font-black px-2 py-0.5 rounded-full">0</span>
+        </div>
+        <div id="col_advogado" class="space-y-3 overflow-y-auto flex-1 pr-1"></div>
+      </div>
+
+      <!-- COLUNA 5: BENEFÍCIO PAGO & COMISSÃO LIBERADA -->
+      <div class="kanban-col bg-slate-200/70 rounded-2xl p-3 flex flex-col max-h-[calc(100vh-260px)]">
+        <div class="flex items-center justify-between pb-2 mb-2 border-b border-slate-300">
+          <div class="flex items-center gap-1.5">
+            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+            <span class="text-xs font-black uppercase text-slate-800">5. Concedido / Comissão</span>
+          </div>
+          <span id="count_aprovado" class="bg-emerald-200 text-emerald-900 text-[11px] font-black px-2 py-0.5 rounded-full">0</span>
+        </div>
+        <div id="col_aprovado" class="space-y-3 overflow-y-auto flex-1 pr-1"></div>
+      </div>
+
+      <!-- COLUNA 6: PERDIDO OU NÃO QUALIFICADO -->
+      <div class="kanban-col bg-slate-200/70 rounded-2xl p-3 flex flex-col max-h-[calc(100vh-260px)]">
+        <div class="flex items-center justify-between pb-2 mb-2 border-b border-slate-300">
+          <div class="flex items-center gap-1.5">
+            <span class="w-2.5 h-2.5 rounded-full bg-slate-400"></span>
+            <span class="text-xs font-black uppercase text-slate-800">6. Não Qualificado</span>
+          </div>
+          <span id="count_perdido" class="bg-slate-300 text-slate-800 text-[11px] font-black px-2 py-0.5 rounded-full">0</span>
+        </div>
+        <div id="col_perdido" class="space-y-3 overflow-y-auto flex-1 pr-1"></div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- ================= MODAL CENTRAL DE ATENDIMENTO & CHAT ================= -->
+  <div id="leadModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3 sm:p-4">
+    <div class="bg-white rounded-3xl shadow-2xl max-w-4xl w-full max-h-[92vh] flex flex-col overflow-hidden border border-slate-200">
+      
+      <!-- Header do Modal -->
+      <div class="bg-brand-900 text-white p-4 sm:p-5 flex items-center justify-between shrink-0">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-full bg-emerald-700 flex items-center justify-center font-black text-emerald-100 text-lg">
+            <span id="modalLeadInitial">M</span>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <h3 id="modalLeadNome" class="text-base sm:text-lg font-black text-white">Nome da Gestante</h3>
+              <span id="modalUrgencyBadge" class="bg-red-600 text-white text-[10px] font-black uppercase px-2 py-0.5 rounded-full">Parto em Novembro</span>
+            </div>
+            <p id="modalLeadSub" class="text-xs text-slate-300">WhatsApp: (11) 99999-9999 • Trabalho: CLT</p>
+          </div>
+        </div>
+
+        <button onclick="closeLeadModal()" class="w-8 h-8 rounded-full bg-brand-800 hover:bg-brand-700 text-white flex items-center justify-center font-bold text-lg transition">
+          ✕
+        </button>
+      </div>
+
+      <!-- Abas de Navegação -->
+      <div class="bg-slate-50 border-b border-slate-200 px-5 flex gap-4 text-xs font-bold text-slate-600 shrink-0">
+        <button onclick="switchTab('atendimento')" id="tabBtn_atendimento" class="py-3 border-b-2 border-brand-700 text-brand-900 font-extrabold flex items-center gap-1.5">
+          💬 Atendimento WhatsApp & Follow-up
+        </button>
+        <button onclick="switchTab('contrato')" id="tabBtn_contrato" class="py-3 border-b-2 border-transparent hover:text-slate-900 flex items-center gap-1.5">
+          📄 Contrato & Comissão
+        </button>
+        <button onclick="switchTab('timeline')" id="tabBtn_timeline" class="py-3 border-b-2 border-transparent hover:text-slate-900 flex items-center gap-1.5">
+          🕒 Histórico & Notas
+        </button>
+      </div>
+
+      <!-- Corpo do Modal com Scroll -->
+      <div class="p-5 overflow-y-auto flex-1 space-y-5">
+        
+        <!-- ================= ABA 1: ATENDIMENTO / WHATSAPP & FOLLOW-UP ================= -->
+        <div id="tabContent_atendimento" class="space-y-5">
+          
+          <!-- Seletor de Estágio do Funil -->
+          <div class="bg-slate-50 p-3.5 rounded-2xl border border-slate-200 flex flex-wrap items-center justify-between gap-3">
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-black text-slate-700">Mudar Estágio:</span>
+              <select id="modalEstagioSelect" onchange="updateLeadStageFromModal()" class="bg-white border border-slate-300 text-xs font-bold rounded-xl p-2 focus:ring-2 focus:ring-brand-600">
+                <option value="triagem">1. Novos Leads (Triagem)</option>
+                <option value="qualificacao">2. Em Atendimento / Qualificação</option>
+                <option value="documentos">3. Aguardando Documentos</option>
+                <option value="advogado">4. Com Advogado Parceiro</option>
+                <option value="aprovado">5. Benefício Aprovado & Comissão Paga</option>
+                <option value="perdido">6. Não Qualificado / Perdido</option>
+              </select>
+            </div>
+
+            <div class="text-xs text-slate-500 font-medium">
+              Lead cadastrado em: <span id="modalDataCadastro" class="font-bold text-slate-700">--</span>
+            </div>
+          </div>
+
+          <!-- Régua de Follow-up com Templates de 1-Clique -->
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <h4 class="text-xs font-black text-slate-900 uppercase tracking-wide flex items-center gap-1.5">
+                <span>⚡ Automação de Atendimento (Templates de 1-Clique)</span>
+              </h4>
+              <span class="text-[11px] text-brand-700 font-bold">Selecione para carregar na mensagem</span>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              
+              <!-- Template 1 -->
+              <button onclick="loadTemplate('apresentacao')" class="text-left bg-white p-3 rounded-xl border border-slate-200 hover:border-brand-600 hover:bg-emerald-50/50 transition shadow-sm group">
+                <div class="flex items-center justify-between mb-1">
+                  <span class="text-xs font-extrabold text-brand-900">1. Primeiro Contato (Urgência Parto)</span>
+                  <span class="text-[10px] bg-red-100 text-red-700 font-black px-1.5 py-0.5 rounded">Reta Final</span>
+                </div>
+                <p class="text-[11px] text-slate-500 line-clamp-2">"Olá! Vi que seu bebê nasce em Novembro. Como está na reta final, precisamos agir antes do parto..."</p>
+              </button>
+
+              <!-- Template 2 -->
+              <button onclick="loadTemplate('documentos')" class="text-left bg-white p-3 rounded-xl border border-slate-200 hover:border-brand-600 hover:bg-emerald-50/50 transition shadow-sm group">
+                <div class="flex items-center justify-between mb-1">
+                  <span class="text-xs font-extrabold text-brand-900">2. Checklist de Documentos</span>
+                  <span class="text-[10px] bg-purple-100 text-purple-700 font-black px-1.5 py-0.5 rounded">Documentação</span>
+                </div>
+                <p class="text-[11px] text-slate-500 line-clamp-2">"Para darmos entrada imediata sem custo prévio: 1) RG/CPF, 2) Atestado 28+ semanas, 3) Carteira de Trabalho..."</p>
+              </button>
+
+              <!-- Template 3 -->
+              <button onclick="loadTemplate('followup')" class="text-left bg-white p-3 rounded-xl border border-slate-200 hover:border-brand-600 hover:bg-emerald-50/50 transition shadow-sm group">
+                <div class="flex items-center justify-between mb-1">
+                  <span class="text-xs font-extrabold text-brand-900">3. Follow-up Cobrança 24h</span>
+                  <span class="text-[10px] bg-amber-100 text-amber-800 font-black px-1.5 py-0.5 rounded">Cobrança</span>
+                </div>
+                <p class="text-[11px] text-slate-500 line-clamp-2">"Passando para avisar que o prazo para requisição pré-parto está correndo. Conseguiu o atestado médico?"</p>
+              </button>
+
+              <!-- Template 4 -->
+              <button onclick="loadTemplate('advogado_contrato')" class="text-left bg-white p-3 rounded-xl border border-slate-200 hover:border-brand-600 hover:bg-emerald-50/50 transition shadow-sm group">
+                <div class="flex items-center justify-between mb-1">
+                  <span class="text-xs font-extrabold text-brand-900">4. Envio de Contrato / Advogado</span>
+                  <span class="text-[10px] bg-emerald-100 text-emerald-800 font-black px-1.5 py-0.5 rounded">Fechamento</span>
+                </div>
+                <p class="text-[11px] text-slate-500 line-clamp-2">"Documentação prévia aprovada! Nosso advogado parceiro está pronto para protocolar. Segue o termo de assessoria..."</p>
+              </button>
+
+            </div>
+          </div>
+
+          <!-- Caixa de Mensagem / Envio para WhatsApp -->
+          <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm">
+            <label class="block text-xs font-bold text-slate-700 mb-2">Mensagem a ser enviada pelo WhatsApp:</label>
+            <textarea id="modalChatText" rows="5" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 text-xs sm:text-sm font-medium focus:ring-2 focus:ring-brand-600 focus:outline-none leading-relaxed"></textarea>
+
+            <div class="mt-3 flex flex-wrap items-center justify-between gap-3">
+              <span class="text-[11px] text-slate-500">
+                💡 O link abrirá o WhatsApp diretamente com o texto digitado sem precisar cadastrar o contato.
+              </span>
+
+              <div class="flex items-center gap-2">
+                <button onclick="saveMessageToTimeline()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-bold py-2.5 px-4 rounded-xl transition">
+                  Apenas Registrar Nota
+                </button>
+
+                <button onclick="sendWhatsAppDirect()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs sm:text-sm font-extrabold py-2.5 px-5 rounded-xl shadow transition flex items-center gap-2">
+                  <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.771-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.575-.187-.988-.365-1.739-.751-2.874-2.502-2.961-2.617-.087-.116-.708-.94-.708-1.793s.448-1.273.607-1.446c.159-.173.346-.217.462-.217l.332.007c.106.005.249-.04.39.299.144.347.491 1.2.534 1.287.043.087.072.188.014.303-.058.116-.087.188-.173.289l-.26.303c-.087.087-.179.182-.077.357.101.174.453.748.971 1.21.668.594 1.232.778 1.405.865.174.087.275.072.376-.043.101-.116.433-.506.549-.679.116-.173.231-.144.39-.087s1.011.477 1.184.564.289.13.332.202c.043.073.043.419-.101.824z"/></svg>
+                  <span>Abrir WhatsApp & Registrar Envio</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- ================= ABA 2: GESTÃO DE CONTRATOS & COMISSÕES ================= -->
+        <div id="tabContent_contrato" class="space-y-5 hidden">
+          
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            
+            <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200">
+              <label class="block text-xs font-bold text-slate-700 mb-1">Valor Estimado do Benefício (R$):</label>
+              <input type="number" id="contractBenefitValue" value="5648.00" oninput="calculateCommission()" class="w-full bg-white border border-slate-300 rounded-xl p-2.5 text-sm font-black focus:ring-2 focus:ring-brand-600">
+              <span class="text-[10px] text-slate-500 mt-1 block">Base média: 4 salários mínimos (R$ 1.412 x 4)</span>
+            </div>
+
+            <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200">
+              <label class="block text-xs font-bold text-slate-700 mb-1">% de Comissão de Intermediação:</label>
+              <input type="number" id="contractCommissionPct" value="30" oninput="calculateCommission()" class="w-full bg-white border border-slate-300 rounded-xl p-2.5 text-sm font-black focus:ring-2 focus:ring-brand-600">
+              <span class="text-[10px] text-slate-500 mt-1 block">Praxe de mercado: 30% no êxito</span>
+            </div>
+
+            <div class="bg-emerald-50 p-4 rounded-2xl border-2 border-emerald-300">
+              <label class="block text-xs font-black text-emerald-900 mb-1">Sua Comissão Projetada (R$):</label>
+              <div id="contractCommissionValue" class="text-xl font-black text-emerald-700 pt-1">
+                R$ 1.694,40
+              </div>
+              <span class="text-[10px] text-emerald-800 font-semibold mt-1 block">Recebimento após saque do benefício</span>
+            </div>
+
+          </div>
+
+          <!-- Status do Contrato -->
+          <div class="bg-white p-4 rounded-2xl border border-slate-200 space-y-3">
+            <h4 class="text-xs font-black uppercase text-slate-800">Status Jurídico do Contrato & Intermediação</h4>
+            
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs font-bold">
+              <button onclick="setContractStatus('pendente')" id="contractStatus_pendente" class="p-2.5 rounded-xl border border-slate-300 bg-slate-100 text-slate-700 hover:bg-slate-200 transition">
+                ⏳ Minuta Pendente
+              </button>
+              <button onclick="setContractStatus('enviado')" id="contractStatus_enviado" class="p-2.5 rounded-xl border border-slate-300 bg-slate-100 text-slate-700 hover:bg-slate-200 transition">
+                📲 Enviado p/ Assinatura
+              </button>
+              <button onclick="setContractStatus('assinado')" id="contractStatus_assinado" class="p-2.5 rounded-xl border border-slate-300 bg-slate-100 text-slate-700 hover:bg-slate-200 transition">
+                ✍️ Assinado Digitalmente
+              </button>
+              <button onclick="setContractStatus('pago')" id="contractStatus_pago" class="p-2.5 rounded-xl border border-slate-300 bg-slate-100 text-slate-700 hover:bg-slate-200 transition">
+                💰 Comissão Paga
+              </button>
+            </div>
+          </div>
+
+          <!-- Minuta de Contrato Gerada Automaticamente -->
+          <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs font-black text-slate-800 uppercase">Minuta do Termo de Intermediação & Assessoria</span>
+              <button onclick="copyContractText()" class="text-xs text-brand-700 hover:underline font-bold flex items-center gap-1">
+                📋 Copiar Minuta para ZapSign / ClickSign
+              </button>
+            </div>
+            <textarea id="contractDraftText" rows="8" readonly class="w-full bg-white border border-slate-300 rounded-xl p-3 text-[11px] font-mono text-slate-700 leading-relaxed"></textarea>
+          </div>
+
+        </div>
+
+        <!-- ================= ABA 3: HISTÓRICO & NOTAS ================= -->
+        <div id="tabContent_timeline" class="space-y-4 hidden">
+          <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 flex gap-2">
+            <input type="text" id="newNoteInput" placeholder="Adicionar uma anotação interna deste caso..." class="flex-1 bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs font-medium focus:ring-2 focus:ring-brand-600">
+            <button onclick="addManualNote()" class="bg-brand-800 hover:bg-brand-700 text-white font-bold text-xs py-2 px-4 rounded-xl transition">
+              Salvar Nota
+            </button>
+          </div>
+
+          <div id="modalTimelineList" class="space-y-2 text-xs">
+            <!-- Timeline renderizada via JS -->
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ================= MODAL ADICIONAR NOVO LEAD MANUAL ================= -->
+  <div id="newLeadModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl shadow-2xl max-w-lg w-full p-6 border border-slate-200">
+      <div class="flex items-center justify-between pb-3 mb-4 border-b border-slate-100">
+        <h3 class="font-black text-base text-slate-900">Cadastrar Nova Gestante (Lead Manual)</h3>
+        <button onclick="closeNewLeadModal()" class="text-slate-400 hover:text-slate-600 font-bold">✕</button>
+      </div>
+
+      <form onsubmit="handleManualLeadSubmit(event)" class="space-y-3.5">
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Nome Completo</label>
+          <input type="text" name="nome" required placeholder="Ex: Larissa Silva" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs font-semibold focus:ring-2 focus:ring-brand-600">
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">WhatsApp com DDD</label>
+          <input type="tel" name="whatsapp" required placeholder="(11) 99999-9999" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs font-semibold focus:ring-2 focus:ring-brand-600">
+        </div>
+
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Previsão do Parto</label>
+            <select name="parto_mes" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2 text-xs font-semibold focus:ring-2 focus:ring-brand-600">
+              <option value="Novembro" selected>Novembro (Reta Final)</option>
+              <option value="Dezembro">Dezembro</option>
+              <option value="Janeiro">Janeiro</option>
+              <option value="Fevereiro">Fevereiro</option>
+              <option value="Bebê já nasceu">Bebê já nasceu</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Situação de Trabalho</label>
+            <select name="situacao_trabalho" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2 text-xs font-semibold focus:ring-2 focus:ring-brand-600">
+              <option value="Desempregada (já tive carteira assinada)">Desempregada c/ registro</option>
+              <option value="Trabalhando com Carteira Assinada (CLT)">CLT Ativa</option>
+              <option value="MEI ou Autônoma">MEI / Autônoma</option>
+              <option value="Dona de casa / Carnê">Dona de casa / Carnê</option>
+              <option value="Não tenho certeza">Avaliar Situação</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="pt-2 flex justify-end gap-2">
+          <button type="button" onclick="closeNewLeadModal()" class="px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-xl">Cancelar</button>
+          <button type="submit" class="px-5 py-2.5 text-xs font-extrabold bg-brand-700 hover:bg-brand-800 text-white rounded-xl shadow">Cadastrar e Abrir Atendimento</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================= SCRIPTS CRM & OPERAÇÃO ================= -->
+  <script>
+    // Estado local
+    let currentLeads = [];
+    let selectedLeadId = null;
+
+    // Inicialização
+    document.addEventListener("DOMContentLoaded", () => {
+      // Ajustar textos com o mês de config.js se disponível
+      if (typeof MATERNA_CONFIG !== 'undefined') {
+        document.querySelectorAll(".current-month-label").forEach(el => el.innerText = MATERNA_CONFIG.currentMonth);
+        const headerEl = document.getElementById("headerMonthText");
+        if (headerEl) headerEl.innerText = MATERNA_CONFIG.currentMonth;
+      }
+
+      loadLeadsFromStorage();
+      renderKanban();
+      updateDashboardMetrics();
+    });
+
+    // Carregar Leads do localStorage
+    function loadLeadsFromStorage() {
+      const stored = localStorage.getItem("materna_leads");
+      if (stored) {
+        try {
+          currentLeads = JSON.parse(stored);
+        } catch(e) {
+          currentLeads = [];
+        }
+      } else {
+        currentLeads = [];
+      }
+    }
+
+    // Salvar Leads no localStorage
+    function saveLeadsToStorage() {
+      localStorage.setItem("materna_leads", JSON.stringify(currentLeads));
+      renderKanban();
+      updateDashboardMetrics();
+    }
+
+    // Gerar Leads de Teste caso o CRM esteja vazio
+    function generateSampleLeads() {
+      const samples = [
+        {
+          id: 'lead_' + (Date.now() - 1000 * 60 * 15),
+          data: new Date(Date.now() - 1000 * 60 * 15).toISOString(),
+          nome: "Juliana Santos Alencar",
+          whatsapp: "(11) 98765-4321",
+          partoMes: "Novembro",
+          situacao: "Desempregada (já tive carteira assinada)",
+          status: "triagem",
+          prioridade: "critica",
+          canal: "Instagram Ads (Criativo Novembro)",
+          contrato: { valorBeneficio: 5648.00, percentual: 30, valorComissao: 1694.40, status: "pendente" },
+          timeline: [
+            { data: new Date(Date.now() - 1000 * 60 * 15).toISOString(), autor: "Landing Page", texto: "Cadastrou-se via anúncio de Novembro." }
+          ]
+        },
+        {
+          id: 'lead_' + (Date.now() - 1000 * 60 * 180),
+          data: new Date(Date.now() - 1000 * 60 * 180).toISOString(),
+          nome: "Camila Ribeiro de Souza",
+          whatsapp: "(21) 97654-1234",
+          partoMes: "Novembro",
+          situacao: "MEI ou Autônoma",
+          status: "qualificacao",
+          prioridade: "critica",
+          canal: "Instagram Ads",
+          contrato: { valorBeneficio: 5648.00, percentual: 30, valorComissao: 1694.40, status: "pendente" },
+          timeline: [
+            { data: new Date(Date.now() - 1000 * 60 * 180).toISOString(), autor: "Landing Page", texto: "Parto previsto para 20/Nov." },
+            { data: new Date(Date.now() - 1000 * 60 * 60).toISOString(), autor: "Atendente", texto: "Mensagem de alerta pré-parto enviada." }
+          ]
+        },
+        {
+          id: 'lead_' + (Date.now() - 1000 * 60 * 1440),
+          data: new Date(Date.now() - 1000 * 60 * 1440).toISOString(),
+          nome: "Beatriz Nogueira Lima",
+          whatsapp: "(31) 99123-5566",
+          partoMes: "Dezembro",
+          situacao: "Trabalhando com Carteira Assinada (CLT)",
+          status: "documentos",
+          prioridade: "alta",
+          canal: "Landing Page",
+          contrato: { valorBeneficio: 6200.00, percentual: 30, valorComissao: 1860.00, status: "enviado" },
+          timeline: [
+            { data: new Date(Date.now() - 1000 * 60 * 1440).toISOString(), autor: "Landing Page", texto: "Lead recebido." },
+            { data: new Date(Date.now() - 1000 * 60 * 700).toISOString(), autor: "Atendente", texto: "Atestado de 30 semanas solicitado." }
+          ]
+        },
+        {
+          id: 'lead_' + (Date.now() - 1000 * 60 * 2880),
+          data: new Date(Date.now() - 1000 * 60 * 2880).toISOString(),
+          nome: "Mariana Costa Ferraz",
+          whatsapp: "(19) 98877-6655",
+          partoMes: "Novembro",
+          situacao: "Desempregada (já tive carteira assinada)",
+          status: "advogado",
+          prioridade: "critica",
+          canal: "Instagram Ads",
+          contrato: { valorBeneficio: 5648.00, percentual: 30, valorComissao: 1694.40, status: "assinado" },
+          timeline: [
+            { data: new Date(Date.now() - 1000 * 60 * 2880).toISOString(), autor: "Landing Page", texto: "Parto previsto para 12/Nov." },
+            { data: new Date(Date.now() - 1000 * 60 * 1200).toISOString(), autor: "Advogado", texto: "Contrato assinado. Protocolo INSS realizado com urgência médica." }
+          ]
+        }
+      ];
+
+      currentLeads = [...samples, ...currentLeads];
+      saveLeadsToStorage();
+      alert("4 leads de teste criados com sucesso no CRM!");
+    }
+
+    // Renderizar o Kanban
+    function renderKanban() {
+      const stages = ['triagem', 'qualificacao', 'documentos', 'advogado', 'aprovado', 'perdido'];
+      
+      // Limpar colunas e contadores
+      stages.forEach(st => {
+        const col = document.getElementById(`col_${st}`);
+        const count = document.getElementById(`count_${st}`);
+        if (col) col.innerHTML = "";
+        if (count) count.innerText = "0";
+      });
+
+      const term = (document.getElementById("searchInput")?.value || "").toLowerCase().trim();
+      const monthFilter = document.getElementById("monthFilter")?.value || "todos";
+
+      let counts = { triagem: 0, qualificacao: 0, documentos: 0, advogado: 0, aprovado: 0, perdido: 0 };
+
+      currentLeads.forEach(lead => {
+        // Filtros
+        if (term) {
+          const matchNome = (lead.nome || "").toLowerCase().includes(term);
+          const matchWhats = (lead.whatsapp || "").toLowerCase().includes(term);
+          if (!matchNome && !matchWhats) return;
+        }
+
+        if (monthFilter !== "todos") {
+          if (monthFilter === "JaNasceu" && !lead.partoMes.toLowerCase().includes("já nasceu")) return;
+          if (monthFilter !== "JaNasceu" && !lead.partoMes.toLowerCase().includes(monthFilter.toLowerCase())) return;
+        }
+
+        const stage = lead.status || 'triagem';
+        if (counts[stage] !== undefined) counts[stage]++;
+
+        const col = document.getElementById(`col_${stage}`);
+        if (!col) return;
+
+        const isNovembro = (lead.partoMes || "").toLowerCase().includes("novembro");
+        const comissao = lead.contrato ? lead.contrato.valorComissao : 1694.40;
+
+        const card = document.createElement("div");
+        card.className = `lead-card bg-white p-3.5 rounded-2xl border shadow-sm cursor-pointer space-y-2.5 ${isNovembro ? 'border-l-4 border-l-red-500 border-red-200' : 'border-slate-200'}`;
+        card.onclick = () => openLeadModal(lead.id);
+
+        card.innerHTML = `
+          <div class="flex items-start justify-between gap-2">
+            <span class="font-extrabold text-xs text-slate-900 leading-snug line-clamp-1">${lead.nome}</span>
+            ${isNovembro ? '<span class="bg-red-600 text-white text-[9px] font-black uppercase px-1.5 py-0.5 rounded tracking-wider shrink-0 animate-pulse">NOVEMBRO</span>' : `<span class="bg-slate-100 text-slate-700 text-[10px] font-bold px-1.5 py-0.5 rounded shrink-0">${lead.partoMes}</span>`}
+          </div>
+
+          <div class="text-[11px] text-slate-600 space-y-0.5">
+            <div class="flex items-center gap-1 text-slate-500">
+              <span>📱</span>
+              <span class="font-bold text-slate-700">${lead.whatsapp}</span>
+            </div>
+            <div class="truncate text-[10px] text-slate-500">
+              💼 ${lead.situacao}
+            </div>
+          </div>
+
+          <div class="pt-1 border-t border-slate-100 flex items-center justify-between text-[11px]">
+            <span class="text-emerald-700 font-black">
+              Comissão: R$ ${comissao.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+            </span>
+            <span class="text-[10px] text-brand-700 font-bold hover:underline">
+              Atender →
+            </span>
+          </div>
+        `;
+
+        col.appendChild(card);
+      });
+
+      // Atualizar badges das colunas
+      stages.forEach(st => {
+        const count = document.getElementById(`count_${st}`);
+        if (count) count.innerText = counts[st];
+      });
+    }
+
+    // Atualizar Métricas do Topo
+    function updateDashboardMetrics() {
+      const total = currentLeads.length;
+      const urgentes = currentLeads.filter(l => (l.partoMes || "").toLowerCase().includes("novembro")).length;
+      const inProcess = currentLeads.filter(l => l.status === 'advogado' || l.status === 'documentos').length;
+      
+      const totalComissao = currentLeads
+        .filter(l => l.status !== 'perdido')
+        .reduce((acc, l) => acc + (l.contrato?.valorComissao || 1694.40), 0);
+
+      document.getElementById("metricTotalLeads").innerText = total;
+      document.getElementById("metricUrgentLeads").innerText = urgentes;
+      document.getElementById("metricInProcess").innerText = inProcess;
+      document.getElementById("metricCommissions").innerText = "R$ " + totalComissao.toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+    }
+
+    // Filtrar Leads na busca ou select
+    function filterLeads() {
+      renderKanban();
+    }
+
+    // Abrir Modal de Atendimento
+    function openLeadModal(leadId) {
+      selectedLeadId = leadId;
+      const lead = currentLeads.find(l => l.id === leadId);
+      if (!lead) return;
+
+      document.getElementById("modalLeadNome").innerText = lead.nome;
+      document.getElementById("modalLeadInitial").innerText = (lead.nome || "M").charAt(0).toUpperCase();
+      document.getElementById("modalLeadSub").innerText = `WhatsApp: ${lead.whatsapp} • Situação: ${lead.situacao}`;
+      
+      const isNov = (lead.partoMes || "").toLowerCase().includes("novembro");
+      const badge = document.getElementById("modalUrgencyBadge");
+      if (isNov) {
+        badge.className = "bg-red-600 text-white text-[10px] font-black uppercase px-2 py-0.5 rounded-full animate-pulse";
+        badge.innerText = "🚨 Parto em Novembro (Urgência Máxima)";
+      } else {
+        badge.className = "bg-slate-200 text-slate-800 text-[10px] font-bold uppercase px-2 py-0.5 rounded-full";
+        badge.innerText = `Parto em ${lead.partoMes}`;
+      }
+
+      document.getElementById("modalEstagioSelect").value = lead.status || 'triagem';
+      document.getElementById("modalDataCadastro").innerText = new Date(lead.data).toLocaleString('pt-BR');
+
+      // Carregar Template Inicial se chat vazio
+      loadTemplate('apresentacao');
+
+      // Carregar dados de Contrato
+      const benef = lead.contrato?.valorBeneficio || 5648.00;
+      const pct = lead.contrato?.percentual || 30;
+      document.getElementById("contractBenefitValue").value = benef;
+      document.getElementById("contractCommissionPct").value = pct;
+      calculateCommission();
+      updateContractButtons(lead.contrato?.status || 'pendente');
+      generateContractDraft(lead);
+
+      // Renderizar timeline
+      renderTimeline(lead);
+
+      // Exibir modal na aba Atendimento
+      switchTab('atendimento');
+      document.getElementById("leadModal").classList.remove("hidden");
+    }
+
+    function closeLeadModal() {
+      document.getElementById("leadModal").classList.add("hidden");
+      selectedLeadId = null;
+    }
+
+    // Alternar Abas do Modal
+    function switchTab(tab) {
+      ['atendimento', 'contrato', 'timeline'].forEach(t => {
+        const btn = document.getElementById(`tabBtn_${t}`);
+        const content = document.getElementById(`tabContent_${t}`);
+        if (t === tab) {
+          btn.className = "py-3 border-b-2 border-brand-700 text-brand-900 font-extrabold flex items-center gap-1.5";
+          content.classList.remove("hidden");
+        } else {
+          btn.className = "py-3 border-b-2 border-transparent hover:text-slate-900 flex items-center gap-1.5";
+          content.classList.add("hidden");
+        }
+      });
+    }
+
+    // Templates de Atendimento Rápido
+    function loadTemplate(type) {
+      const lead = currentLeads.find(l => l.id === selectedLeadId);
+      if (!lead) return;
+
+      const primeiroNome = lead.nome.split(" ")[0];
+      const mes = lead.partoMes;
+      let text = "";
+
+      if (type === 'apresentacao') {
+        text = `Olá ${primeiroNome}, tudo bem? Aqui é da assessoria especializada MaternidadePrev! 🌸\n\nRecebi seu cadastro e vi que seu bebê está previsto para nascer no mês de *${mes}*.\n\n⚠️ Como você está na reta final, precisamos agir com urgência para protocolar seu pedido de *Salário-Maternidade (de R$ 5.600 a R$ 12.000+)* junto aos nossos advogados parceiros antes que o nascimento ocorra.\n\nVocê já conseguiu o seu atestado médico pré-natal indicando o tempo de gestação?`;
+      } else if (type === 'documentos') {
+        text = `Olá ${primeiroNome}! Para o nosso advogado parceiro dar entrada imediata no seu benefício *sem você pagar nada adiantado*, precisamos apenas de fotos legíveis dos seguintes documentos:\n\n1️⃣ Documento de Identidade (RG/CPF ou CNH);\n2️⃣ Atestado médico com o tempo de gestação (a partir de 28 semanas);\n3️⃣ Fotos da Carteira de Trabalho (CTPS) ou comprovantes de contribuição.\n\nPode me enviar por aqui mesmo para iniciarmos a análise agora?`;
+      } else if (type === 'followup') {
+        text = `Oi ${primeiroNome}, tudo bem? Passando para te lembrar que a janela de protocolo pré-parto para quem ganha neném em *${mes}* está nos últimos dias!\n\nSe deixarmos para depois do nascimento, o processo pode enfrentar filas demoradas do INSS. Conseguiu separar os documentos para liberarmos seu benefício?`;
+      } else if (type === 'advogado_contrato') {
+        text = `Ótima notícia, ${primeiroNome}! 🎉\n\nSua documentação preliminar foi validada pela nossa assessoria e encaminhada ao advogado parceiro especialista.\n\nPara formalizarmos o processo com 100% de segurança e transparência (onde você só paga a comissão de 30% quando o benefício cair na sua conta), segue o link do Termo de Assessoria para assinatura digital.\n\nPosso gerar o link para você assinar agora pelo celular?`;
+      }
+
+      document.getElementById("modalChatText").value = text;
+    }
+
+    // Disparar WhatsApp Direto
+    function sendWhatsAppDirect() {
+      const lead = currentLeads.find(l => l.id === selectedLeadId);
+      if (!lead) return;
+
+      const text = document.getElementById("modalChatText").value;
+      const cleanPhone = lead.whatsapp.replace(/\D/g, "");
+      const fullPhone = cleanPhone.startsWith("55") ? cleanPhone : ("55" + cleanPhone);
+
+      // Adicionar à timeline
+      lead.timeline = lead.timeline || [];
+      lead.timeline.unshift({
+        data: new Date().toISOString(),
+        autor: "Atendente",
+        texto: `Mensagem enviada via WhatsApp:\n"${text.substring(0, 100)}..."`
+      });
+
+      // Se estava em triagem, avançar para 'qualificacao'
+      if (lead.status === 'triagem') {
+        lead.status = 'qualificacao';
+        document.getElementById("modalEstagioSelect").value = 'qualificacao';
+      }
+
+      saveLeadsToStorage();
+      renderTimeline(lead);
+
+      // Abrir WhatsApp Web
+      const url = `https://api.whatsapp.com/send?phone=${fullPhone}&text=${encodeURIComponent(text)}`;
+      window.open(url, "_blank");
+    }
+
+    // Registrar Apenas Nota na Timeline
+    function saveMessageToTimeline() {
+      const lead = currentLeads.find(l => l.id === selectedLeadId);
+      if (!lead) return;
+
+      const text = document.getElementById("modalChatText").value;
+      if (!text.trim()) return;
+
+      lead.timeline = lead.timeline || [];
+      lead.timeline.unshift({
+        data: new Date().toISOString(),
+        autor: "Atendente (Nota Interna)",
+        texto: text
+      });
+
+      saveLeadsToStorage();
+      renderTimeline(lead);
+      alert("Nota salva no histórico deste lead!");
+    }
+
+    // Atualizar Estágio do Lead via Select do Modal
+    function updateLeadStageFromModal() {
+      const lead = currentLeads.find(l => l.id === selectedLeadId);
+      if (!lead) return;
+
+      const novoEstagio = document.getElementById("modalEstagioSelect").value;
+      lead.status = novoEstagio;
+
+      lead.timeline = lead.timeline || [];
+      lead.timeline.unshift({
+        data: new Date().toISOString(),
+        autor: "Sistema",
+        texto: `Status alterado para: ${novoEstagio.toUpperCase()}`
+      });
+
+      saveLeadsToStorage();
+      renderTimeline(lead);
+    }
+
+    // Cálculo de Comissões
+    function calculateCommission() {
+      const benef = parseFloat(document.getElementById("contractBenefitValue").value) || 0;
+      const pct = parseFloat(document.getElementById("contractCommissionPct").value) || 0;
+      const val = (benef * pct) / 100;
+
+      document.getElementById("contractCommissionValue").innerText = "R$ " + val.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+
+      const lead = currentLeads.find(l => l.id === selectedLeadId);
+      if (lead) {
+        lead.contrato = lead.contrato || {};
+        lead.contrato.valorBeneficio = benef;
+        lead.contrato.percentual = pct;
+        lead.contrato.valorComissao = val;
+        generateContractDraft(lead);
+        saveLeadsToStorage();
+      }
+    }
+
+    // Mudar Status do Contrato
+    function setContractStatus(st) {
+      const lead = currentLeads.find(l => l.id === selectedLeadId);
+      if (!lead) return;
+
+      lead.contrato = lead.contrato || {};
+      lead.contrato.status = st;
+
+      lead.timeline = lead.timeline || [];
+      lead.timeline.unshift({
+        data: new Date().toISOString(),
+        autor: "Contratos",
+        texto: `Status do Contrato alterado para: ${st.toUpperCase()}`
+      });
+
+      if (st === 'assinado' && lead.status !== 'advogado') {
+        lead.status = 'advogado';
+        document.getElementById("modalEstagioSelect").value = 'advogado';
+      } else if (st === 'pago') {
+        lead.status = 'aprovado';
+        document.getElementById("modalEstagioSelect").value = 'aprovado';
+      }
+
+      updateContractButtons(st);
+      saveLeadsToStorage();
+      renderTimeline(lead);
+    }
+
+    function updateContractButtons(st) {
+      ['pendente', 'enviado', 'assinado', 'pago'].forEach(s => {
+        const btn = document.getElementById(`contractStatus_${s}`);
+        if (!btn) return;
+        if (s === st) {
+          btn.className = "p-2.5 rounded-xl border-2 border-brand-700 bg-brand-100 text-brand-900 font-black shadow-sm";
+        } else {
+          btn.className = "p-2.5 rounded-xl border border-slate-300 bg-slate-50 text-slate-700 hover:bg-slate-100 transition";
+        }
+      });
+    }
+
+    // Gerador de Minuta de Contrato
+    function generateContractDraft(lead) {
+      const draft = `TERMO DE PRESTAÇÃO DE ASSESSORIA ADMINISTRATIVA E INTERMEDIAÇÃO DE BENEFÍCIO PREVIDENCIÁRIO
+
+CONTRATANTE: ${lead.nome}
+CONTATO: ${lead.whatsapp}
+SITUAÇÃO DECLARADA: ${lead.situacao}
+PREVISÃO DE PARTO: ${lead.partoMes}
+
+CONTRATADA: MaternidadePrev - Assessoria em Direito Materno
+ADVOGADO PARCEIRO CORRESPONDENTE: Departamento Jurídico Credenciado
+
+OBJETO: Assessoria na montagem, conferência documental e encaminhamento administrativo de requerimento de SALÁRIO-MATERNIDADE junto ao INSS.
+
+HONORÁRIOS DE ÊXITO: Fica ajustado o percentual de ${lead.contrato?.percentual || 30}% (trinta por cento) sobre o montante bruto auferido a título de benefício (estimado em R$ ${(lead.contrato?.valorBeneficio || 5648).toFixed(2)}), condicionado ESTRITAMENTE ao êxito e efetiva disponibilização do pagamento à CONTRATANTE.
+
+Em caso de indeferimento sem recebimento, NENHUM valor será devido pela CONTRATANTE.
+
+Data: ${new Date().toLocaleDateString('pt-BR')}`;
+
+      document.getElementById("contractDraftText").value = draft;
+    }
+
+    function copyContractText() {
+      const textarea = document.getElementById("contractDraftText");
+      textarea.select();
+      document.execCommand("copy");
+      alert("Minuta do Contrato copiada para a área de transferência!");
+    }
+
+    // Renderizar Timeline
+    function renderTimeline(lead) {
+      const container = document.getElementById("modalTimelineList");
+      container.innerHTML = "";
+
+      const items = lead.timeline || [];
+      if (items.length === 0) {
+        container.innerHTML = `<p class="text-slate-400 italic">Nenhum histórico registrado ainda.</p>`;
+        return;
+      }
+
+      items.forEach(it => {
+        const div = document.createElement("div");
+        div.className = "bg-white p-3 rounded-xl border border-slate-200 shadow-xs space-y-1";
+        div.innerHTML = `
+          <div class="flex items-center justify-between text-[11px] text-slate-500">
+            <span class="font-bold text-slate-800">${it.autor || 'Sistema'}</span>
+            <span>${new Date(it.data).toLocaleString('pt-BR')}</span>
+          </div>
+          <p class="text-xs text-slate-700 whitespace-pre-line">${it.texto}</p>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    function addManualNote() {
+      const input = document.getElementById("newNoteInput");
+      const note = input.value.trim();
+      if (!note) return;
+
+      const lead = currentLeads.find(l => l.id === selectedLeadId);
+      if (!lead) return;
+
+      lead.timeline = lead.timeline || [];
+      lead.timeline.unshift({
+        data: new Date().toISOString(),
+        autor: "Equipe CRM",
+        texto: note
+      });
+
+      input.value = "";
+      saveLeadsToStorage();
+      renderTimeline(lead);
+    }
+
+    // Modal de Lead Manual
+    function openNewLeadModal() {
+      document.getElementById("newLeadModal").classList.remove("hidden");
+    }
+
+    function closeNewLeadModal() {
+      document.getElementById("newLeadModal").classList.add("hidden");
+    }
+
+    function handleManualLeadSubmit(e) {
+      e.preventDefault();
+      const form = e.target;
+      const formData = new FormData(form);
+
+      const nome = formData.get("nome");
+      const whatsapp = formData.get("whatsapp");
+      const partoMes = formData.get("parto_mes");
+      const situacao = formData.get("situacao_trabalho");
+
+      const isNov = partoMes.toLowerCase().includes("novembro");
+
+      const newLead = {
+        id: 'lead_' + Date.now(),
+        data: new Date().toISOString(),
+        nome,
+        whatsapp,
+        partoMes,
+        situacao,
+        status: 'triagem',
+        prioridade: isNov ? 'critica' : 'alta',
+        canal: 'Cadastro Manual no CRM',
+        contrato: {
+          valorBeneficio: 5648.00,
+          percentual: 30,
+          valorComissao: 1694.40,
+          status: 'pendente'
+        },
+        timeline: [
+          {
+            data: new Date().toISOString(),
+            autor: "Equipe CRM",
+            texto: `Lead inserido manualmente no sistema com previsão de parto para ${partoMes}.`
+          }
+        ]
+      };
+
+      currentLeads.unshift(newLead);
+      saveLeadsToStorage();
+      closeNewLeadModal();
+      form.reset();
+      openLeadModal(newLead.id);
+    }
+
+    // Exportação em CSV
+    function exportLeadsCSV() {
+      if (currentLeads.length === 0) {
+        alert("Nenhum lead disponível para exportação.");
+        return;
+      }
+
+      let csv = "ID;Data;Nome;WhatsApp;Mes_Parto;Situacao;Estagio;Valor_Beneficio;Comissao\n";
+      currentLeads.forEach(l => {
+        csv += `"${l.id}";"${new Date(l.data).toLocaleDateString('pt-BR')}";"${l.nome}";"${l.whatsapp}";"${l.partoMes}";"${l.situacao}";"${l.status}";"${l.contrato?.valorBeneficio || 5648}";"${l.contrato?.valorComissao || 1694.40}"\n`;
+      });
+
+      const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = `leads_maternidadeprev_${new Date().toISOString().slice(0,10)}.csv`;
+      link.click();
+    }
+  </script>
+</body>
+</html>

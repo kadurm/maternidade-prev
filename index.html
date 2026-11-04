@@ -418,7 +418,7 @@
         Não somos o Instituto Nacional do Seguro Social (INSS). Todo cidadão pode solicitar benefícios gratuitamente nos canais oficiais do governo.
       </p>
       <p class="text-slate-600 text-[10px]">
-        © 2026 MaternidadePrev. Todos os direitos reservados.
+        © 2026 MaternidadePrev. Todos os direitos reservados. • <a href="admin.html" class="text-slate-500 hover:text-slate-300 underline">Acesso CRM / Equipe</a>
       </p>
     </div>
   </footer>
@@ -508,15 +508,37 @@
       const encodedMsg = encodeURIComponent(msg);
       const whatsappUrl = `https://api.whatsapp.com/send?phone=${rawPhone}&text=${encodedMsg}`;
 
-      // Salva localmente caso queira exportar lista
+      // Salva localmente caso queira exportar lista e abastecer o CRM
       const leads = JSON.parse(localStorage.getItem("materna_leads") || "[]");
-      leads.push({
+      const isUrgent = (typeof MATERNA_CONFIG !== 'undefined' && partoMes.toLowerCase().includes(MATERNA_CONFIG.currentMonth.toLowerCase())) || partoMes.toLowerCase().includes('novembro');
+      
+      const newLead = {
+        id: 'lead_' + Date.now(),
         data: new Date().toISOString(),
         nome,
         whatsapp,
         partoMes,
-        situacao
-      });
+        situacao,
+        status: 'triagem', // triagem, qualificacao, documentos, advogado, aprovado, perdido
+        prioridade: isUrgent ? 'critica' : 'alta',
+        canal: 'Landing Page (Meta Ads)',
+        contrato: {
+          valorBeneficio: 5648.00,
+          percentual: 30,
+          valorComissao: 1694.40,
+          status: 'pendente' // pendente, gerado, assinado, pago
+        },
+        timeline: [
+          {
+            data: new Date().toISOString(),
+            tipo: 'sistema',
+            autor: 'Landing Page',
+            texto: `Lead registrado com parto previsto para ${partoMes}. Situação: ${situacao}.`
+          }
+        ]
+      };
+      
+      leads.unshift(newLead);
       localStorage.setItem("materna_leads", JSON.stringify(leads));
 
       // Redireciona em 600ms
