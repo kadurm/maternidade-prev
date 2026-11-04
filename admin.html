@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MaternidadePrev | Gestão Administrativa & Dashboard Financeiro</title>
+  <title>MaternidadePrev | Gestão Administrativa, CRM & Auditoria</title>
   
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -26,6 +26,7 @@
               700: '#047857',
               800: '#065f46',
               900: '#064e3b',
+              950: '#032e22',
               dark: '#0a3d2c'
             }
           }
@@ -38,6 +39,12 @@
     .kanban-col {
       min-width: 320px;
       max-width: 320px;
+      transition: all 0.2s ease;
+    }
+    .kanban-col.drag-hover {
+      background-color: #d1fae5 !important;
+      border: 2px dashed #059669 !important;
+      transform: scale(1.01);
     }
     ::-webkit-scrollbar {
       width: 6px;
@@ -50,8 +57,15 @@
       background: #cbd5e1;
       border-radius: 4px;
     }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
     .lead-card {
       transition: all 0.15s ease;
+      cursor: grab;
+    }
+    .lead-card:active {
+      cursor: grabbing;
     }
     .lead-card:hover {
       transform: translateY(-2px);
@@ -63,7 +77,7 @@
 </head>
 <body class="bg-slate-100 text-slate-900 font-sans min-h-screen flex flex-col antialiased">
 
-  <!-- ================= TELA DE LOGIN (PROTEÇÃO ADMINISTRATIVA) ================= -->
+  <!-- ================= TELA DE LOGIN ================= -->
   <div id="loginScreen" class="fixed inset-0 bg-gradient-to-br from-brand-950 via-brand-900 to-slate-950 z-50 flex items-center justify-center p-4">
     <div class="bg-white rounded-3xl shadow-2xl max-w-md w-full p-8 border border-emerald-500/20 relative">
       <div class="text-center mb-6">
@@ -102,29 +116,31 @@
   <!-- ================= PAINEL AUTENTICADO ================= -->
   <div id="appContainer" class="hidden flex-1 flex flex-col">
 
-    <!-- ================= TOPBAR DO SISTEMA ================= -->
+    <!-- ================= TOPBAR ================= -->
     <header class="bg-brand-900 text-white shadow-md sticky top-0 z-40 border-b border-brand-800">
       <div class="max-w-7xl mx-auto px-4 py-2.5 flex flex-wrap items-center justify-between gap-3">
         
-        <!-- Logo & Identificação -->
         <div class="flex items-center gap-3">
           <img src="assets/logo.jpg" alt="Logo" class="w-9 h-9 rounded-full border border-emerald-400 object-cover">
           <div>
             <div class="flex items-center gap-2">
               <span class="font-black text-base tracking-tight">Maternidade<span class="text-emerald-400">Prev</span></span>
-              <span class="bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[9px] uppercase font-black px-2 py-0.5 rounded-full">Gestão & Finanças</span>
+              <span class="bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[9px] uppercase font-black px-2 py-0.5 rounded-full">Painel dos Sócios</span>
             </div>
-            <span class="text-[11px] text-slate-300">Administrador: <strong class="text-amber-300">Kadu (Gestor de Tráfego)</strong></span>
+            <span class="text-[11px] text-slate-300">Gestão Operacional • <strong class="text-amber-300">Kadu / Sócios</strong></span>
           </div>
         </div>
 
-        <!-- Seletor de Visões (Dashboard vs CRM) -->
+        <!-- Seletor de Visões (Dashboard vs CRM vs Auditoria) -->
         <div class="flex items-center bg-brand-950/60 p-1 rounded-xl border border-brand-800">
-          <button onclick="switchView('dashboard')" id="btnView_dashboard" class="px-3.5 py-1.5 rounded-lg text-xs font-extrabold transition flex items-center gap-1.5 bg-brand-700 text-white shadow">
-            <span>📊 Dashboard Financeiro & DRE</span>
+          <button onclick="switchView('dashboard')" id="btnView_dashboard" class="px-3 py-1.5 rounded-lg text-xs font-extrabold transition flex items-center gap-1.5 bg-brand-700 text-white shadow">
+            <span>📊 Dashboard & DRE</span>
           </button>
-          <button onclick="switchView('crm')" id="btnView_crm" class="px-3.5 py-1.5 rounded-lg text-xs font-extrabold transition flex items-center gap-1.5 text-slate-300 hover:text-white">
+          <button onclick="switchView('crm')" id="btnView_crm" class="px-3 py-1.5 rounded-lg text-xs font-extrabold transition flex items-center gap-1.5 text-slate-300 hover:text-white">
             <span>📋 CRM & Atendimento</span>
+          </button>
+          <button onclick="switchView('auditoria')" id="btnView_auditoria" class="px-3 py-1.5 rounded-lg text-xs font-extrabold transition flex items-center gap-1.5 text-slate-300 hover:text-white">
+            <span>📦 Auditoria Permanente</span>
           </button>
         </div>
 
@@ -172,37 +188,31 @@
 
           <button onclick="openAuditModal()" class="bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-xs py-2.5 px-4 rounded-xl shadow transition flex items-center gap-1.5">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path></svg>
-            <span>Inserir Valor Real Investido</span>
+            <span>Inserir / Auditar Gasto Real Meta</span>
           </button>
         </div>
       </div>
 
       <!-- Métricas Centrais -->
       <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        
-        <!-- Faturamento de Honorários -->
         <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200">
           <div class="flex items-center justify-between text-slate-500 mb-1">
-            <span class="text-[11px] font-bold uppercase tracking-wider">Honorários da Assessoria (30%)</span>
+            <span class="text-[11px] font-bold uppercase tracking-wider">Honorários Faturados (30%)</span>
             <span class="text-lg">💰</span>
           </div>
           <div class="text-2xl font-black text-slate-900" id="dashFaturamentoTotal">R$ 0</div>
           <span class="text-[10px] text-slate-500 mt-1 block">R$ 1.945,20 por contrato deferido</span>
         </div>
 
-        <!-- Caixa de Tráfego / Recomposição Kadu -->
         <div class="bg-blue-50/80 p-4 rounded-2xl shadow-sm border-2 border-blue-300">
           <div class="flex items-center justify-between text-blue-900 mb-1">
-            <span class="text-[11px] font-black uppercase tracking-wider flex items-center gap-1">
-              <span>📢 Recomposição Tráfego</span>
-            </span>
+            <span class="text-[11px] font-black uppercase tracking-wider">📢 Recomposição Tráfego</span>
             <span class="text-xs bg-blue-200 text-blue-900 font-black px-1.5 py-0.5 rounded">Retorna p/ Kadu</span>
           </div>
-          <div class="text-2xl font-black text-blue-950" id="dashReembolsoMidiaTotal">R$ 0</div>
-          <span class="text-[10px] text-blue-700 font-medium mt-1 block">Ressarcimento de verba de anúncios</span>
+          <div class="text-2xl font-black text-blue-950" id="dashReembolsoMidiaTotal">R$ 0,00</div>
+          <span class="text-[10px] text-blue-700 font-medium mt-1 block">Valor real auditado a ressarcir</span>
         </div>
 
-        <!-- Reembolso Guias INSS (Nathália) -->
         <div class="bg-purple-50/80 p-4 rounded-2xl shadow-sm border border-purple-200">
           <div class="flex items-center justify-between text-purple-900 mb-1">
             <span class="text-[11px] font-bold uppercase tracking-wider">Reembolso Guias INSS</span>
@@ -212,96 +222,86 @@
           <span class="text-[10px] text-purple-700 font-medium mt-1 block">R$ 178,90 / guia avulsa adiantada</span>
         </div>
 
-        <!-- Lucro Líquido Real da Operação -->
         <div class="bg-emerald-50 p-4 rounded-2xl shadow-sm border-2 border-emerald-400">
           <div class="flex items-center justify-between text-emerald-900 mb-1">
             <span class="text-[11px] font-extrabold uppercase tracking-wider">Lucro Líquido Real</span>
             <span class="text-lg">💎</span>
           </div>
           <div class="text-2xl font-black text-emerald-800" id="dashLucroLiquidoTotal">R$ 0</div>
-          <span class="text-[10px] text-emerald-700 font-semibold mt-1 block">Base de rateio dos 4 sócios</span>
+          <span class="text-[10px] text-emerald-700 font-semibold mt-1 block">Base oficial de rateio dos sócios</span>
         </div>
-
       </div>
 
-      <!-- DEMONSTRATIVO DE RESULTADO (DRE) & DISTRIBUIÇÃO DOS SÓCIOS -->
+      <!-- DEMONSTRATIVO DE RESULTADO (DRE) & AUDITORIA REAL -->
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        
-        <!-- Tabela DRE Oficial -->
         <div class="lg:col-span-2 bg-white p-5 rounded-2xl shadow-sm border border-slate-200 space-y-4">
           <div class="flex items-center justify-between pb-3 border-b border-slate-100">
             <div>
-              <h3 class="text-sm font-black text-slate-900 uppercase tracking-wide">DRE • Demonstrativo Financeiro por Contrato</h3>
-              <p class="text-xs text-slate-500">Cálculo contábil auditado para cada benefício de 4x R$ 1.621 (R$ 6.484,00)</p>
+              <h3 class="text-sm font-black text-slate-900 uppercase tracking-wide">DRE Oficial • Demonstrativo em Tempo Real</h3>
+              <p class="text-xs text-slate-500">Cálculo contábil auditado dos contratos ativos vs gastos reais de anúncios</p>
             </div>
-            <span class="text-[10px] bg-slate-100 text-slate-600 font-bold px-2 py-1 rounded-lg">Base 1 Contrato</span>
+            <span class="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2 py-1 rounded-lg">Dados Reais</span>
           </div>
 
           <div class="space-y-2 text-xs font-semibold">
             <div class="flex justify-between py-1.5 border-b border-slate-100">
-              <span class="text-slate-600">(+) Valor do Benefício Liberado pelo INSS</span>
+              <span class="text-slate-600">(+) Valor Médio de Benefício Liberado por Caso</span>
               <span class="font-black text-slate-900">R$ 6.484,00</span>
             </div>
             <div class="flex justify-between py-1.5 border-b border-slate-100 bg-emerald-50/50 px-2 rounded-lg">
-              <span class="text-emerald-900 font-black">(+) Receita de Honorários da Assessoria (30%)</span>
-              <span class="font-black text-emerald-800">R$ 1.945,20</span>
+              <span class="text-emerald-900 font-black">(+) Receita Bruta de Honorários da Carteira (30%)</span>
+              <span class="font-black text-emerald-800" id="dreFaturamentoBruto">R$ 0,00</span>
             </div>
             <div class="flex justify-between py-1.5 border-b border-slate-100 bg-blue-50/50 px-2 rounded-lg text-blue-900">
-              <span class="font-bold">(-) Despesa: Reembolso Verba de Tráfego (Kadu)</span>
-              <span class="font-black">- R$ <span id="dreMediaValue">200,00</span></span>
+              <span class="font-bold">(-) Despesa Operacional: Valor Real Investido no Meta Ads (Kadu)</span>
+              <span class="font-black">- R$ <span id="dreMediaValue">0,00</span></span>
             </div>
             <div class="flex justify-between py-2 border-b-2 border-slate-900 bg-slate-50 px-2 rounded-lg text-slate-900">
-              <span class="font-black text-sm">(=) LUCRO LÍQUIDO REAL DA OPERAÇÃO</span>
-              <span class="font-black text-sm text-emerald-700" id="dreLucroLiquido">R$ 1.745,20</span>
+              <span class="font-black text-sm">(=) LUCRO LÍQUIDO REAL AUDITADO A REPARTIR</span>
+              <span class="font-black text-sm text-emerald-700" id="dreLucroLiquido">R$ 0,00</span>
             </div>
           </div>
 
           <!-- Rateio Oficial Discriminado -->
           <div class="pt-2 space-y-2">
-            <h4 class="text-xs font-black uppercase text-slate-700 tracking-wider">Repasse Líquido Oficial aos Parceiros:</h4>
+            <h4 class="text-xs font-black uppercase text-slate-700 tracking-wider">Repasse Líquido aos Parceiros:</h4>
             
             <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
-              
-              <!-- Nathalia -->
               <div class="p-3 rounded-xl bg-purple-50/80 border border-purple-200">
                 <div class="flex justify-between items-center mb-1">
                   <span class="font-black text-purple-900">Nathália</span>
                   <span class="text-[9px] bg-purple-200 text-purple-800 font-black px-1.5 rounded">45%</span>
                 </div>
-                <div class="text-sm font-black text-purple-950" id="dreNathaliaValue">R$ 785,34</div>
-                <div class="text-[10px] text-purple-700 mt-1">+ R$ 178,90 guia</div>
+                <div class="text-sm font-black text-purple-950" id="dreNathaliaValue">R$ 0,00</div>
+                <div class="text-[10px] text-purple-700 mt-1">+ Reembolso Guias INSS</div>
               </div>
 
-              <!-- Amanda -->
               <div class="p-3 rounded-xl bg-pink-50/80 border border-pink-200">
                 <div class="flex justify-between items-center mb-1">
                   <span class="font-black text-pink-900">Amanda</span>
                   <span class="text-[9px] bg-pink-200 text-pink-800 font-black px-1.5 rounded">22,5%</span>
                 </div>
-                <div class="text-sm font-black text-pink-950" id="dreAmandaValue">R$ 392,67</div>
+                <div class="text-sm font-black text-pink-950" id="dreAmandaValue">R$ 0,00</div>
                 <div class="text-[10px] text-pink-700 mt-1">Rosto da marca</div>
               </div>
 
-              <!-- Rafael -->
               <div class="p-3 rounded-xl bg-amber-50/80 border border-amber-200">
                 <div class="flex justify-between items-center mb-1">
                   <span class="font-black text-amber-900">Rafael</span>
                   <span class="text-[9px] bg-amber-200 text-amber-800 font-black px-1.5 rounded">22,5%</span>
                 </div>
-                <div class="text-sm font-black text-amber-950" id="dreRafaelValue">R$ 392,67</div>
+                <div class="text-sm font-black text-amber-950" id="dreRafaelValue">R$ 0,00</div>
                 <div class="text-[10px] text-amber-700 mt-1">Prod. Conteúdo</div>
               </div>
 
-              <!-- Kadu -->
               <div class="p-3 rounded-xl bg-blue-50/90 border-2 border-blue-400">
                 <div class="flex justify-between items-center mb-1">
                   <span class="font-black text-blue-900">Kadu</span>
                   <span class="text-[9px] bg-blue-600 text-white font-black px-1.5 rounded">10% Puro</span>
                 </div>
-                <div class="text-sm font-black text-blue-950" id="dreKaduLucroValue">R$ 174,52</div>
+                <div class="text-sm font-black text-blue-950" id="dreKaduLucroValue">R$ 0,00</div>
                 <div class="text-[10px] text-blue-700 font-extrabold mt-1">Lucro Real Gestor</div>
               </div>
-
             </div>
           </div>
         </div>
@@ -318,18 +318,16 @@
             </div>
 
             <div class="space-y-3">
-              <!-- Card Valor Real -->
               <div class="bg-blue-950/50 p-3.5 rounded-xl border border-blue-500/30">
                 <span class="text-[10px] text-blue-300 uppercase font-black tracking-wider block mb-0.5">Valor Real Investido na Conta</span>
                 <div class="text-2xl font-black text-white" id="cardAuditValorInvestido">R$ 0,00</div>
                 <span class="text-[10px] text-blue-300/80 mt-1 block">Reembolso devido 100% a Kadu antes do lucro</span>
               </div>
 
-              <!-- Métricas Reais Derivadas -->
               <div class="bg-black/30 p-3 rounded-xl border border-slate-800 space-y-2 text-xs">
                 <div class="flex justify-between">
                   <span class="text-slate-400">Contratos Reais no Funil:</span>
-                  <span class="font-black text-white" id="cardAuditTotalContratos">0 casos</span>
+                  <span class="font-black text-white" id="cardAuditTotalContratos">0 contratos</span>
                 </div>
                 <div class="flex justify-between">
                   <span class="text-slate-400">CAC Real (Custo por Contrato):</span>
@@ -341,7 +339,6 @@
                 </div>
               </div>
 
-              <!-- Status do Ressarcimento -->
               <div class="p-2.5 rounded-xl bg-slate-800/60 border border-slate-700/60 text-[11px] flex items-center justify-between">
                 <span class="text-slate-300">Status Recomposição Caixa:</span>
                 <span class="text-amber-300 font-extrabold flex items-center gap-1">
@@ -362,13 +359,12 @@
             </button>
           </div>
         </div>
-
       </div>
 
     </div>
 
     <!-- ========================================================================= -->
-    <!-- VISÃO 2: CRM & FUNIL DE QUALIFICAÇÃO (KANBAN)                             -->
+    <!-- VISÃO 2: CRM & FUNIL DE ATENDIMENTO COM DRAG & DROP                       -->
     <!-- ========================================================================= -->
     <div id="view_crm" class="hidden flex-1 flex flex-col">
       
@@ -400,12 +396,12 @@
         </div>
       </div>
 
-      <!-- KANBAN BOARD -->
+      <!-- KANBAN BOARD COM DRAG & DROP REAL -->
       <main class="flex-1 max-w-7xl mx-auto px-4 pb-12 w-full overflow-x-auto">
         <div class="flex gap-4 items-start min-w-[1920px] pb-6" id="kanbanBoard">
           
           <!-- COLUNA 1: NOVOS LEADS -->
-          <div class="kanban-col bg-slate-200/70 rounded-2xl p-3 flex flex-col max-h-[calc(100vh-210px)]">
+          <div class="kanban-col bg-slate-200/70 rounded-2xl p-3 flex flex-col max-h-[calc(100vh-210px)]" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event, 'triagem')">
             <div class="flex items-center justify-between pb-2 mb-2 border-b border-slate-300">
               <div class="flex items-center gap-1.5">
                 <span class="w-2.5 h-2.5 rounded-full bg-blue-500"></span>
@@ -413,11 +409,11 @@
               </div>
               <span id="count_triagem" class="bg-blue-100 text-blue-800 text-[11px] font-black px-2 py-0.5 rounded-full">0</span>
             </div>
-            <div id="col_triagem" class="space-y-3 overflow-y-auto flex-1 pr-1"></div>
+            <div id="col_triagem" class="space-y-3 overflow-y-auto flex-1 pr-1 min-h-[120px]"></div>
           </div>
 
           <!-- COLUNA 2: EM QUALIFICAÇÃO -->
-          <div class="kanban-col bg-slate-200/70 rounded-2xl p-3 flex flex-col max-h-[calc(100vh-210px)]">
+          <div class="kanban-col bg-slate-200/70 rounded-2xl p-3 flex flex-col max-h-[calc(100vh-210px)]" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event, 'qualificacao')">
             <div class="flex items-center justify-between pb-2 mb-2 border-b border-slate-300">
               <div class="flex items-center gap-1.5">
                 <span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
@@ -425,11 +421,11 @@
               </div>
               <span id="count_qualificacao" class="bg-amber-100 text-amber-800 text-[11px] font-black px-2 py-0.5 rounded-full">0</span>
             </div>
-            <div id="col_qualificacao" class="space-y-3 overflow-y-auto flex-1 pr-1"></div>
+            <div id="col_qualificacao" class="space-y-3 overflow-y-auto flex-1 pr-1 min-h-[120px]"></div>
           </div>
 
           <!-- COLUNA 3: DOCUMENTOS SOLICITADOS -->
-          <div class="kanban-col bg-slate-200/70 rounded-2xl p-3 flex flex-col max-h-[calc(100vh-210px)]">
+          <div class="kanban-col bg-slate-200/70 rounded-2xl p-3 flex flex-col max-h-[calc(100vh-210px)]" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event, 'documentos')">
             <div class="flex items-center justify-between pb-2 mb-2 border-b border-slate-300">
               <div class="flex items-center gap-1.5">
                 <span class="w-2.5 h-2.5 rounded-full bg-purple-500"></span>
@@ -437,11 +433,11 @@
               </div>
               <span id="count_documentos" class="bg-purple-100 text-purple-800 text-[11px] font-black px-2 py-0.5 rounded-full">0</span>
             </div>
-            <div id="col_documentos" class="space-y-3 overflow-y-auto flex-1 pr-1"></div>
+            <div id="col_documentos" class="space-y-3 overflow-y-auto flex-1 pr-1 min-h-[120px]"></div>
           </div>
 
           <!-- COLUNA 4: COM ADVOGADO PARCEIRO -->
-          <div class="kanban-col bg-slate-200/70 rounded-2xl p-3 flex flex-col max-h-[calc(100vh-210px)]">
+          <div class="kanban-col bg-slate-200/70 rounded-2xl p-3 flex flex-col max-h-[calc(100vh-210px)]" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event, 'advogado')">
             <div class="flex items-center justify-between pb-2 mb-2 border-b border-slate-300">
               <div class="flex items-center gap-1.5">
                 <span class="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>
@@ -449,11 +445,11 @@
               </div>
               <span id="count_advogado" class="bg-emerald-100 text-emerald-800 text-[11px] font-black px-2 py-0.5 rounded-full">0</span>
             </div>
-            <div id="col_advogado" class="space-y-3 overflow-y-auto flex-1 pr-1"></div>
+            <div id="col_advogado" class="space-y-3 overflow-y-auto flex-1 pr-1 min-h-[120px]"></div>
           </div>
 
           <!-- COLUNA 5: CONCEDIDO / COMISSÃO -->
-          <div class="kanban-col bg-slate-200/70 rounded-2xl p-3 flex flex-col max-h-[calc(100vh-210px)]">
+          <div class="kanban-col bg-slate-200/70 rounded-2xl p-3 flex flex-col max-h-[calc(100vh-210px)]" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event, 'aprovado')">
             <div class="flex items-center justify-between pb-2 mb-2 border-b border-slate-300">
               <div class="flex items-center gap-1.5">
                 <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
@@ -461,11 +457,11 @@
               </div>
               <span id="count_aprovado" class="bg-emerald-200 text-emerald-900 text-[11px] font-black px-2 py-0.5 rounded-full">0</span>
             </div>
-            <div id="col_aprovado" class="space-y-3 overflow-y-auto flex-1 pr-1"></div>
+            <div id="col_aprovado" class="space-y-3 overflow-y-auto flex-1 pr-1 min-h-[120px]"></div>
           </div>
 
           <!-- COLUNA 6: NÃO QUALIFICADO -->
-          <div class="kanban-col bg-slate-200/70 rounded-2xl p-3 flex flex-col max-h-[calc(100vh-210px)]">
+          <div class="kanban-col bg-slate-200/70 rounded-2xl p-3 flex flex-col max-h-[calc(100vh-210px)]" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event, 'perdido')">
             <div class="flex items-center justify-between pb-2 mb-2 border-b border-slate-300">
               <div class="flex items-center gap-1.5">
                 <span class="w-2.5 h-2.5 rounded-full bg-slate-400"></span>
@@ -473,7 +469,7 @@
               </div>
               <span id="count_perdido" class="bg-slate-300 text-slate-800 text-[11px] font-black px-2 py-0.5 rounded-full">0</span>
             </div>
-            <div id="col_perdido" class="space-y-3 overflow-y-auto flex-1 pr-1"></div>
+            <div id="col_perdido" class="space-y-3 overflow-y-auto flex-1 pr-1 min-h-[120px]"></div>
           </div>
 
         </div>
@@ -481,11 +477,66 @@
 
     </div>
 
+    <!-- ========================================================================= -->
+    <!-- VISÃO 3: AUDITORIA & ARQUIVO PERMANENTE (NENHUM LEAD É DELETADO)           -->
+    <!-- ========================================================================= -->
+    <div id="view_auditoria" class="hidden flex-1 max-w-7xl mx-auto px-4 py-6 w-full space-y-6">
+      
+      <!-- Banner de Compliance Imutável -->
+      <div class="bg-slate-900 text-white p-5 rounded-2xl shadow-sm border border-slate-800 flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <div class="flex items-center gap-2 mb-1">
+            <span class="text-lg">🔒</span>
+            <h3 class="text-sm font-black text-white uppercase tracking-wider">Arquivo Permanente & Auditoria Imutável</h3>
+            <span class="text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-2 py-0.5 rounded-full font-bold">100% Preservado</span>
+          </div>
+          <p class="text-xs text-slate-300 max-w-2xl leading-relaxed">
+            Nenhum card ou conversa é excluído permanentemente do sistema. Todos os registros permanecem arquivados com log temporal para transparência entre os 4 sócios (Kadu, Nathália, Amanda e Rafael).
+          </p>
+        </div>
+
+        <!-- Instruções de Conexão WhatsApp -->
+        <div class="bg-slate-800/80 p-3 rounded-xl border border-slate-700 text-xs space-y-1">
+          <span class="text-amber-300 font-bold block">📲 Conexão WhatsApp Business:</span>
+          <p class="text-[11px] text-slate-300">Para espelhar conversas automáticas para todos os sócios: utilize a <strong>Evolution API (QR Code)</strong> ou a <strong>WhatsApp Cloud API da Meta</strong> via webhook.</p>
+        </div>
+      </div>
+
+      <!-- Tabela Completa de Auditoria -->
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+        <div class="p-4 border-b border-slate-100 flex flex-wrap items-center justify-between gap-3">
+          <h4 class="font-black text-sm text-slate-900">Histórico Completo de Todos os Casos (<span id="auditCountTotal">0</span> registros)</h4>
+          <input type="text" id="auditSearchInput" oninput="renderAuditTable()" placeholder="Filtrar por nome, telefone ou status..." class="bg-slate-50 border border-slate-300 rounded-xl px-3 py-1.5 text-xs font-semibold focus:ring-2 focus:ring-brand-600 focus:outline-none">
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-slate-50 text-slate-600 uppercase font-black text-[10px] border-b border-slate-200">
+              <tr>
+                <th class="p-3">Data</th>
+                <th class="p-3">Nome da Gestante</th>
+                <th class="p-3">WhatsApp</th>
+                <th class="p-3">Previsão Parto</th>
+                <th class="p-3">Situação</th>
+                <th class="p-3">Estágio Atual</th>
+                <th class="p-3">Diagnóstico IA</th>
+                <th class="p-3 text-right">Ação</th>
+              </tr>
+            </thead>
+            <tbody id="auditTableBody" class="divide-y divide-slate-100 font-medium text-slate-700">
+              <!-- Renderizado via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
   </div>
 
-  <!-- ================= MODAL CENTRAL DE ATENDIMENTO & CHAT ================= -->
+  <!-- ================= MODAL CENTRAL DE ATENDIMENTO, CHAT & MOTOR IA ================= -->
   <div id="leadModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3 sm:p-4">
-    <div class="bg-white rounded-3xl shadow-2xl max-w-4xl w-full max-h-[92vh] flex flex-col overflow-hidden border border-slate-200">
+    <div class="bg-white rounded-3xl shadow-2xl max-w-5xl w-full max-h-[94vh] flex flex-col overflow-hidden border border-slate-200">
       
       <!-- Header do Modal -->
       <div class="bg-brand-900 text-white p-4 sm:p-5 flex items-center justify-between shrink-0">
@@ -502,110 +553,128 @@
           </div>
         </div>
 
-        <button onclick="closeLeadModal()" class="w-8 h-8 rounded-full bg-brand-800 hover:bg-brand-700 text-white flex items-center justify-center font-bold text-lg transition">
-          ✕
-        </button>
+        <div class="flex items-center gap-2">
+          <button onclick="openEditLeadModal(selectedLeadId)" class="bg-brand-800 hover:bg-brand-700 text-emerald-200 border border-brand-700 text-xs font-bold py-1.5 px-3 rounded-xl transition flex items-center gap-1">
+            <span>✏️ Editar Card</span>
+          </button>
+          <button onclick="closeLeadModal()" class="w-8 h-8 rounded-full bg-brand-800 hover:bg-brand-700 text-white flex items-center justify-center font-bold text-lg transition">
+            ✕
+          </button>
+        </div>
+      </div>
+
+      <!-- MOTOR DE IA COM BLOCO DE NOTAS FIXO (SEMPRE VISÍVEL NO TOPO DO MODAL) -->
+      <div class="bg-slate-900 text-white p-4 border-b border-slate-800 shrink-0">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          
+          <!-- Diagnóstico da IA -->
+          <div class="space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-black uppercase text-emerald-400 flex items-center gap-1.5">
+                <span>🧠 Motor de IA • Diagnóstico de Conversa</span>
+              </span>
+              <button onclick="runAIDiagnosis()" class="text-[10px] text-slate-400 hover:text-white underline font-semibold">
+                🔄 Reanalisar com IA
+              </button>
+            </div>
+
+            <div class="bg-slate-950 p-2.5 rounded-xl border border-slate-800 text-xs space-y-1.5">
+              <div class="flex items-center gap-2">
+                <span class="text-slate-400 font-bold">Status do Atendimento:</span>
+                <span id="aiStatusBadge" class="bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[10px] font-black px-2 py-0.5 rounded-full">Em Andamento</span>
+              </div>
+              <p class="text-slate-200 text-[11px] leading-snug" id="aiOndeParou">
+                <strong>Onde parou:</strong> Carregando diagnóstico da conversa...
+              </p>
+              <p class="text-amber-300 text-[11px] leading-snug font-medium" id="aiProximaAcao">
+                <strong>💡 Próximo passo sugerido:</strong> Carregando...
+              </p>
+            </div>
+          </div>
+
+          <!-- Bloco de Notas Fixo dos Sócios -->
+          <div class="space-y-1.5">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-black uppercase text-slate-300 flex items-center gap-1">
+                <span>📝 Bloco de Notas Fixo (Visível a Todos os Sócios)</span>
+              </span>
+              <span class="text-[10px] text-emerald-400 font-semibold" id="lblNotaSalvaStatus">Salvo automaticamente</span>
+            </div>
+            <textarea id="fixedCaseNotes" oninput="saveFixedCaseNotes()" placeholder="Digite observações importantes deste caso (ex: data que fez perícia, se o marido ligou, etc)..." class="w-full h-[76px] bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 resize-none font-medium"></textarea>
+          </div>
+
+        </div>
       </div>
 
       <!-- Abas de Navegação -->
       <div class="bg-slate-50 border-b border-slate-200 px-5 flex gap-4 text-xs font-bold text-slate-600 shrink-0">
         <button onclick="switchTab('atendimento')" id="tabBtn_atendimento" class="py-3 border-b-2 border-brand-700 text-brand-900 font-extrabold flex items-center gap-1.5">
-          💬 Atendimento WhatsApp & Follow-up
+          💬 Chat Interno no CRM & WhatsApp
         </button>
         <button onclick="switchTab('contrato')" id="tabBtn_contrato" class="py-3 border-b-2 border-transparent hover:text-slate-900 flex items-center gap-1.5">
-          📄 Contrato & DRE do Lead
+          📄 Contrato & DRE do Caso
         </button>
         <button onclick="switchTab('timeline')" id="tabBtn_timeline" class="py-3 border-b-2 border-transparent hover:text-slate-900 flex items-center gap-1.5">
-          🕒 Histórico & Notas
+          🕒 Histórico & Auditoria
         </button>
       </div>
 
       <!-- Corpo do Modal -->
       <div class="p-5 overflow-y-auto flex-1 space-y-5">
         
-        <!-- ABA 1: ATENDIMENTO WHATSAPP -->
-        <div id="tabContent_atendimento" class="space-y-5">
+        <!-- ABA 1: CHAT INTERNO NO CRM -->
+        <div id="tabContent_atendimento" class="space-y-4">
           
-          <div class="bg-slate-50 p-3.5 rounded-2xl border border-slate-200 flex flex-wrap items-center justify-between gap-3">
+          <div class="bg-slate-50 p-3 rounded-2xl border border-slate-200 flex flex-wrap items-center justify-between gap-3">
             <div class="flex items-center gap-2">
-              <span class="text-xs font-black text-slate-700">Mudar Estágio:</span>
+              <span class="text-xs font-black text-slate-700">Mover Estágio:</span>
               <select id="modalEstagioSelect" onchange="updateLeadStageFromModal()" class="bg-white border border-slate-300 text-xs font-bold rounded-xl p-2 focus:ring-2 focus:ring-brand-600">
                 <option value="triagem">1. Novos Leads (Triagem)</option>
                 <option value="qualificacao">2. Em Atendimento / Qualificação</option>
                 <option value="documentos">3. Aguardando Documentos</option>
                 <option value="advogado">4. Com Advogado Parceiro</option>
                 <option value="aprovado">5. Benefício Aprovado & Comissão Paga</option>
-                <option value="perdido">6. Não Qualificado / Perdido</option>
+                <option value="perdido">6. Não Qualificado (Arquivado)</option>
               </select>
             </div>
 
-            <div class="text-xs text-slate-500 font-medium">
-              Lead cadastrado em: <span id="modalDataCadastro" class="font-bold text-slate-700">--</span>
-            </div>
-          </div>
-
-          <!-- Templates de 1-Clique -->
-          <div>
-            <div class="flex items-center justify-between mb-2">
-              <h4 class="text-xs font-black text-slate-900 uppercase tracking-wide">
-                ⚡ Automação de Atendimento (Templates de 1-Clique)
-              </h4>
-              <span class="text-[11px] text-brand-700 font-bold">Selecione para carregar na mensagem</span>
-            </div>
-
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              <button onclick="loadTemplate('apresentacao')" class="text-left bg-white p-3 rounded-xl border border-slate-200 hover:border-brand-600 hover:bg-emerald-50/50 transition shadow-sm">
-                <div class="flex items-center justify-between mb-1">
-                  <span class="text-xs font-extrabold text-brand-900">1. Primeiro Contato (Pré-Parto)</span>
-                  <span class="text-[10px] bg-red-100 text-red-700 font-black px-1.5 py-0.5 rounded">Reta Final</span>
-                </div>
-                <p class="text-[11px] text-slate-500 line-clamp-2">"Olá! Vi que você trabalha CLT e seu bebê nasce em Novembro. Sabia do 2º salário-maternidade?..."</p>
-              </button>
-
-              <button onclick="loadTemplate('documentos')" class="text-left bg-white p-3 rounded-xl border border-slate-200 hover:border-brand-600 hover:bg-emerald-50/50 transition shadow-sm">
-                <div class="flex items-center justify-between mb-1">
-                  <span class="text-xs font-extrabold text-brand-900">2. Checklist de Documentos</span>
-                  <span class="text-[10px] bg-purple-100 text-purple-700 font-black px-1.5 py-0.5 rounded">Documentos</span>
-                </div>
-                <p class="text-[11px] text-slate-500 line-clamp-2">"Para entrada imediata sem custo prévio: 1) RG/CPF, 2) Atestado 28+ semanas, 3) Carteira de Trabalho..."</p>
-              </button>
-
-              <button onclick="loadTemplate('followup')" class="text-left bg-white p-3 rounded-xl border border-slate-200 hover:border-brand-600 hover:bg-emerald-50/50 transition shadow-sm">
-                <div class="flex items-center justify-between mb-1">
-                  <span class="text-xs font-extrabold text-brand-900">3. Follow-up Cobrança 24h</span>
-                  <span class="text-[10px] bg-amber-100 text-amber-800 font-black px-1.5 py-0.5 rounded">Urgência</span>
-                </div>
-                <p class="text-[11px] text-slate-500 line-clamp-2">"Passando para avisar que a contribuição avulsa pré-parto de Novembro precisa ser feita antes do nascimento..."</p>
-              </button>
-
-              <button onclick="loadTemplate('advogado_contrato')" class="text-left bg-white p-3 rounded-xl border border-slate-200 hover:border-brand-600 hover:bg-emerald-50/50 transition shadow-sm">
-                <div class="flex items-center justify-between mb-1">
-                  <span class="text-xs font-extrabold text-brand-900">4. Envio de Contrato / Advogado</span>
-                  <span class="text-[10px] bg-emerald-100 text-emerald-800 font-black px-1.5 py-0.5 rounded">Fechamento</span>
-                </div>
-                <p class="text-[11px] text-slate-500 line-clamp-2">"Cadastro validado! Segue o link do Termo de Assessoria (você só paga no êxito após o saque)..."</p>
+            <div class="flex items-center gap-2">
+              <button onclick="simulateLeadReply()" class="text-xs bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-1.5 px-3 rounded-xl transition">
+                📲 Simular Resposta da Gestante
               </button>
             </div>
           </div>
 
-          <!-- Caixa de Mensagem / WhatsApp -->
-          <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm">
-            <label class="block text-xs font-bold text-slate-700 mb-2">Mensagem a ser enviada pelo WhatsApp:</label>
-            <textarea id="modalChatText" rows="5" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 text-xs sm:text-sm font-medium focus:ring-2 focus:ring-brand-600 focus:outline-none leading-relaxed"></textarea>
+          <!-- JANELA DE CHAT INTERNO (MENSAGENS TROCADAS) -->
+          <div class="bg-slate-100 rounded-2xl border border-slate-300 p-4 h-72 overflow-y-auto space-y-3" id="chatMessagesContainer">
+            <!-- Mensagens renderizadas via JS -->
+          </div>
 
-            <div class="mt-3 flex flex-wrap items-center justify-between gap-3">
+          <!-- Templates de Resposta Rápida -->
+          <div class="flex items-center gap-1.5 overflow-x-auto pb-1 text-[11px] font-bold">
+            <span class="text-slate-400 shrink-0">Respostas Rápidas:</span>
+            <button onclick="loadTemplate('apresentacao')" class="bg-white border border-slate-300 hover:border-brand-600 px-2.5 py-1 rounded-lg shrink-0">1. Apresentação (Pré-Parto)</button>
+            <button onclick="loadTemplate('documentos')" class="bg-white border border-slate-300 hover:border-brand-600 px-2.5 py-1 rounded-lg shrink-0">2. Pedir Documentos</button>
+            <button onclick="loadTemplate('followup')" class="bg-white border border-slate-300 hover:border-brand-600 px-2.5 py-1 rounded-lg shrink-0">3. Follow-up Cobrança</button>
+            <button onclick="loadTemplate('advogado_contrato')" class="bg-white border border-slate-300 hover:border-brand-600 px-2.5 py-1 rounded-lg shrink-0">4. Enviar Contrato</button>
+          </div>
+
+          <!-- Campo de Digitação e Disparo -->
+          <div class="bg-white rounded-2xl border border-slate-200 p-3 shadow-sm space-y-2">
+            <textarea id="modalChatText" rows="3" placeholder="Digite uma mensagem para a gestante..." class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs sm:text-sm font-medium focus:ring-2 focus:ring-brand-600 focus:outline-none"></textarea>
+
+            <div class="flex flex-wrap items-center justify-between gap-2">
               <span class="text-[11px] text-slate-500">
-                💡 O link abrirá o WhatsApp diretamente com o texto digitado sem precisar cadastrar o contato.
+                💬 Enviando pelo sistema, a conversa fica salva e visível para todos os sócios.
               </span>
 
               <div class="flex items-center gap-2">
-                <button onclick="saveMessageToTimeline()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-bold py-2.5 px-4 rounded-xl transition">
-                  Apenas Registrar Nota
+                <button onclick="sendMessageInternal()" class="bg-brand-700 hover:bg-brand-800 text-white text-xs font-extrabold py-2 px-4 rounded-xl shadow transition">
+                  Enviar no Chat Interno
                 </button>
-
-                <button onclick="sendWhatsAppDirect()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs sm:text-sm font-extrabold py-2.5 px-5 rounded-xl shadow transition flex items-center gap-2">
+                <button onclick="sendWhatsAppDirect()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-extrabold py-2 px-4 rounded-xl shadow transition flex items-center gap-1.5">
                   <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.771-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.575-.187-.988-.365-1.739-.751-2.874-2.502-2.961-2.617-.087-.116-.708-.94-.708-1.793s.448-1.273.607-1.446c.159-.173.346-.217.462-.217l.332.007c.106.005.249-.04.39.299.144.347.491 1.2.534 1.287.043.087.072.188.014.303-.058.116-.087.188-.173.289l-.26.303c-.087.087-.179.182-.077.357.101.174.453.748.971 1.21.668.594 1.232.778 1.405.865.174.087.275.072.376-.043.101-.116.433-.506.549-.679.116-.173.231-.144.39-.087s1.011.477 1.184.564.289.13.332.202c.043.073.043.419-.101.824z"/></svg>
-                  <span>Abrir WhatsApp & Registrar Envio</span>
+                  <span>Abrir WhatsApp Web</span>
                 </button>
               </div>
             </div>
@@ -614,37 +683,29 @@
         </div>
 
         <!-- ABA 2: CONTRATO & DRE DO CASO -->
-        <div id="tabContent_contrato" class="space-y-5 hidden">
-          
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        <div id="tabContent_contrato" class="space-y-4 hidden">
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div class="bg-slate-50 p-3.5 rounded-2xl border border-slate-200">
               <label class="block text-xs font-bold text-slate-700 mb-1">Valor Benefício (R$):</label>
               <input type="number" id="contractBenefitValue" value="6484.00" oninput="calculateCommission()" class="w-full bg-white border border-slate-300 rounded-xl p-2 text-xs font-black focus:ring-2 focus:ring-brand-600">
-              <span class="text-[10px] text-slate-500 mt-1 block">4x R$ 1.621 (INSS)</span>
+              <span class="text-[10px] text-slate-500 mt-1 block">4 parcelas de R$ 1.621</span>
             </div>
 
             <div class="bg-slate-50 p-3.5 rounded-2xl border border-slate-200">
               <label class="block text-xs font-bold text-slate-700 mb-1">% Honorários:</label>
               <input type="number" id="contractCommissionPct" value="30" oninput="calculateCommission()" class="w-full bg-white border border-slate-300 rounded-xl p-2 text-xs font-black focus:ring-2 focus:ring-brand-600">
-              <span class="text-[10px] text-slate-500 mt-1 block">Bruto: R$ 1.945,20</span>
-            </div>
-
-            <div class="bg-blue-50/70 p-3.5 rounded-2xl border border-blue-200">
-              <label class="block text-xs font-black text-blue-900 mb-1">Verba de Mídia / Tráfego (R$):</label>
-              <input type="number" id="contractMediaCost" value="200.00" oninput="calculateCommission()" class="w-full bg-white border border-blue-300 rounded-xl p-2 text-xs font-black text-blue-950 focus:ring-2 focus:ring-blue-600">
-              <span class="text-[10px] text-blue-700 mt-1 block font-bold">Reembolso 100% p/ Kadu</span>
+              <span class="text-[10px] text-slate-500 mt-1 block">R$ 1.945,20 por contrato</span>
             </div>
 
             <div class="bg-emerald-50 p-3.5 rounded-2xl border-2 border-emerald-300">
-              <label class="block text-xs font-black text-emerald-900 mb-1">Lucro Líquido Real (R$):</label>
+              <label class="block text-xs font-black text-emerald-900 mb-1">Honorários Brutos:</label>
               <div id="contractCommissionValue" class="text-base font-black text-emerald-700 pt-1">
-                R$ 1.745,20
+                R$ 1.945,20
               </div>
-              <span class="text-[10px] text-emerald-800 font-semibold mt-0.5 block">(Honorários - Mídia)</span>
+              <span class="text-[10px] text-emerald-800 font-semibold mt-0.5 block">+ R$ 178,90 (guia INSS)</span>
             </div>
           </div>
 
-          <!-- Status do Contrato -->
           <div class="bg-white p-4 rounded-2xl border border-slate-200 space-y-3">
             <h4 class="text-xs font-black uppercase text-slate-800">Status Jurídico do Contrato & Intermediação</h4>
             <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs font-bold">
@@ -655,43 +716,6 @@
             </div>
           </div>
 
-          <!-- Rateio deste Contrato por Sócio -->
-          <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-3">
-            <div class="flex items-center justify-between">
-              <h4 class="text-xs font-black uppercase text-slate-800 flex items-center gap-1.5">
-                <span>🤝 Repasse Financeiro deste Contrato</span>
-              </h4>
-              <span class="text-[11px] text-slate-500">Total a reter da cliente: <strong id="modalTotalRetido" class="text-slate-900 font-black">R$ 2.124,10</strong> (30% + Guia R$ 178,90)</span>
-            </div>
-
-            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-xs">
-              <div class="bg-white p-3 rounded-xl border border-purple-200">
-                <span class="text-[10px] text-purple-700 font-extrabold block">NATHÁLIA (45%)</span>
-                <span class="text-sm font-black text-purple-900 block" id="modalSplit_nathalia">R$ 785,34</span>
-                <span class="text-[10px] text-slate-500">+ R$ 178,90 (reembolso guia)</span>
-              </div>
-
-              <div class="bg-white p-3 rounded-xl border border-pink-200">
-                <span class="text-[10px] text-pink-700 font-extrabold block">AMANDA (22,5%)</span>
-                <span class="text-sm font-black text-pink-900 block" id="modalSplit_amanda">R$ 392,67</span>
-                <span class="text-[10px] text-slate-500">Rosto / Apresentadora</span>
-              </div>
-
-              <div class="bg-white p-3 rounded-xl border border-amber-200">
-                <span class="text-[10px] text-amber-700 font-extrabold block">RAFAEL (22,5%)</span>
-                <span class="text-sm font-black text-amber-900 block" id="modalSplit_rafael">R$ 392,67</span>
-                <span class="text-[10px] text-slate-500">Produção de Conteúdo</span>
-              </div>
-
-              <div class="bg-white p-3 rounded-xl border-2 border-blue-400">
-                <span class="text-[10px] text-blue-700 font-extrabold block">KADU (10% PURO)</span>
-                <span class="text-sm font-black text-blue-900 block" id="modalSplit_kadu">R$ 174,52</span>
-                <span class="text-[10px] text-blue-700 font-bold block">+ R$ 200,00 (Reembolso Mídia)</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Minuta de Contrato -->
           <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200">
             <div class="flex items-center justify-between mb-2">
               <span class="text-xs font-black text-slate-800 uppercase">Minuta do Termo de Assessoria</span>
@@ -701,13 +725,12 @@
             </div>
             <textarea id="contractDraftText" rows="6" readonly class="w-full bg-white border border-slate-300 rounded-xl p-3 text-[11px] font-mono text-slate-700 leading-relaxed"></textarea>
           </div>
-
         </div>
 
-        <!-- ABA 3: HISTÓRICO & NOTAS -->
+        <!-- ABA 3: HISTÓRICO & AUDITORIA -->
         <div id="tabContent_timeline" class="space-y-4 hidden">
           <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 flex gap-2">
-            <input type="text" id="newNoteInput" placeholder="Adicionar uma anotação interna deste caso..." class="flex-1 bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs font-medium focus:ring-2 focus:ring-brand-600">
+            <input type="text" id="newNoteInput" placeholder="Adicionar uma anotação permanente no histórico..." class="flex-1 bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs font-medium focus:ring-2 focus:ring-brand-600">
             <button onclick="addManualNote()" class="bg-brand-800 hover:bg-brand-700 text-white font-bold text-xs py-2 px-4 rounded-xl transition">
               Salvar Nota
             </button>
@@ -720,7 +743,71 @@
     </div>
   </div>
 
-  <!-- ================= MODAL INSERIR VALOR REAL AUDITADO (META ADS) ================= -->
+  <!-- ================= MODAL EDITAR CARD DO LEAD ================= -->
+  <div id="editLeadModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl shadow-2xl max-w-lg w-full p-6 border border-slate-200">
+      <div class="flex items-center justify-between pb-3 mb-4 border-b border-slate-100">
+        <h3 class="font-black text-base text-slate-900">Editar Card do Lead</h3>
+        <button onclick="closeEditLeadModal()" class="text-slate-400 hover:text-slate-600 font-bold">✕</button>
+      </div>
+
+      <form onsubmit="handleEditLeadSubmit(event)" class="space-y-3.5">
+        <input type="hidden" id="editLeadId">
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Nome Completo</label>
+          <input type="text" id="editLeadNome" required class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs font-semibold focus:ring-2 focus:ring-brand-600">
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">WhatsApp com DDD</label>
+          <input type="tel" id="editLeadWhatsApp" required class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs font-semibold focus:ring-2 focus:ring-brand-600">
+        </div>
+
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Previsão do Parto</label>
+            <select id="editLeadParto" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2 text-xs font-semibold focus:ring-2 focus:ring-brand-600">
+              <option value="Novembro">Novembro (Reta Final)</option>
+              <option value="Dezembro">Dezembro</option>
+              <option value="Janeiro">Janeiro</option>
+              <option value="Fevereiro">Fevereiro</option>
+              <option value="Bebê já nasceu">Bebê já nasceu</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Estágio do Funil</label>
+            <select id="editLeadEstagio" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2 text-xs font-semibold focus:ring-2 focus:ring-brand-600">
+              <option value="triagem">1. Novos Leads</option>
+              <option value="qualificacao">2. Em Atendimento</option>
+              <option value="documentos">3. Aguardando Documentos</option>
+              <option value="advogado">4. Com Advogado</option>
+              <option value="aprovado">5. Concedido / Pago</option>
+              <option value="perdido">6. Não Qualificado</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Situação de Trabalho</label>
+          <select id="editLeadSituacao" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2 text-xs font-semibold focus:ring-2 focus:ring-brand-600">
+            <option value="Trabalhando com Carteira Assinada (CLT)">CLT (2º Salário Maternidade)</option>
+            <option value="Desempregada (já tive carteira assinada)">Desempregada c/ registro</option>
+            <option value="MEI ou Autônoma">MEI / Autônoma</option>
+            <option value="Dona de casa / Carnê">Dona de casa / Carnê</option>
+            <option value="Não tenho certeza">Avaliar Situação</option>
+          </select>
+        </div>
+
+        <div class="pt-2 flex justify-end gap-2">
+          <button type="button" onclick="closeEditLeadModal()" class="px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-xl">Cancelar</button>
+          <button type="submit" class="px-5 py-2.5 text-xs font-extrabold bg-brand-700 hover:bg-brand-800 text-white rounded-xl shadow">Salvar Alterações</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================= MODAL AUDITAR GASTO REAL ================= -->
   <div id="auditModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
     <div class="bg-white rounded-3xl shadow-2xl max-w-md w-full p-6 border border-slate-200">
       <div class="flex items-center justify-between pb-3 mb-4 border-b border-slate-100">
@@ -812,15 +899,16 @@
     </div>
   </div>
 
-  <!-- ================= JAVASCRIPT GLOBAL & AUTENTICAÇÃO ================= -->
+  <!-- ================= JAVASCRIPT GLOBAL, DRAG & DROP, CHAT E MOTOR DE IA ================= -->
   <script>
-    // Autenticação Administrativa
     const AUTH_KEY = "materna_admin_logged";
     const VALID_USERS = ["adminprev", "admin", "kadu"];
     const VALID_PASSWORDS = ["AdminPrev", "adminprev", "maternidade2026"];
 
     let currentLeads = [];
     let selectedLeadId = null;
+    let draggedLeadId = null;
+    let auditData = { valor: 0.00, ref: "Inicial", data: new Date().toLocaleDateString('pt-BR') };
 
     document.addEventListener("DOMContentLoaded", () => {
       checkAuthStatus();
@@ -858,26 +946,23 @@
       location.reload();
     }
 
-    // Alternar entre Dashboard Financeiro e CRM
+    // Alternar entre Dashboard, CRM e Auditoria Permanente
     function switchView(view) {
-      const btnDash = document.getElementById("btnView_dashboard");
-      const btnCrm = document.getElementById("btnView_crm");
-      const viewDash = document.getElementById("view_dashboard");
-      const viewCrm = document.getElementById("view_crm");
+      ['dashboard', 'crm', 'auditoria'].forEach(v => {
+        const btn = document.getElementById(`btnView_${v}`);
+        const container = document.getElementById(`view_${v}`);
+        if (v === view) {
+          btn.className = "px-3 py-1.5 rounded-lg text-xs font-extrabold transition flex items-center gap-1.5 bg-brand-700 text-white shadow";
+          container.classList.remove("hidden");
+        } else {
+          btn.className = "px-3 py-1.5 rounded-lg text-xs font-extrabold transition flex items-center gap-1.5 text-slate-300 hover:text-white";
+          container.classList.add("hidden");
+        }
+      });
 
-      if (view === 'dashboard') {
-        btnDash.className = "px-3.5 py-1.5 rounded-lg text-xs font-extrabold transition flex items-center gap-1.5 bg-brand-700 text-white shadow";
-        btnCrm.className = "px-3.5 py-1.5 rounded-lg text-xs font-extrabold transition flex items-center gap-1.5 text-slate-300 hover:text-white";
-        viewDash.classList.remove("hidden");
-        viewCrm.classList.add("hidden");
-        updateDashboardMetrics();
-      } else {
-        btnCrm.className = "px-3.5 py-1.5 rounded-lg text-xs font-extrabold transition flex items-center gap-1.5 bg-brand-700 text-white shadow";
-        btnDash.className = "px-3.5 py-1.5 rounded-lg text-xs font-extrabold transition flex items-center gap-1.5 text-slate-300 hover:text-white";
-        viewCrm.classList.remove("hidden");
-        viewDash.classList.add("hidden");
-        renderKanban();
-      }
+      if (view === 'dashboard') updateDashboardMetrics();
+      if (view === 'crm') renderKanban();
+      if (view === 'auditoria') renderAuditTable();
     }
 
     function initDashboard() {
@@ -896,8 +981,14 @@
       }
     }
 
-    // Gerenciamento de Auditoria Real do Meta Ads
-    let auditData = { valor: 0.00, ref: "Inicial", data: new Date().toLocaleDateString('pt-BR') };
+    function saveLeadsToStorage() {
+      localStorage.setItem("materna_leads", JSON.stringify(currentLeads));
+      renderKanban();
+      updateDashboardMetrics();
+      if (!document.getElementById("view_auditoria").classList.contains("hidden")) {
+        renderAuditTable();
+      }
+    }
 
     function loadAuditFromStorage() {
       const stored = localStorage.getItem("materna_meta_audit_info");
@@ -911,6 +1002,7 @@
       updateDashboardMetrics();
     }
 
+    // Modal de Auditoria Real
     function openAuditModal() {
       document.getElementById("auditInputValor").value = auditData.valor > 0 ? auditData.valor : "";
       document.getElementById("auditInputRef").value = auditData.ref || "Campanha Meta Ads MaternidadePrev";
@@ -928,97 +1020,53 @@
       const ref = document.getElementById("auditInputRef").value.trim() || "Auditoria Meta Ads";
       const data = document.getElementById("auditInputData").value || new Date().toISOString().slice(0, 10);
 
-      auditData = {
-        valor: val,
-        ref: ref,
-        data: data
-      };
-
+      auditData = { valor: val, ref: ref, data: data };
       saveAuditToStorage();
       closeAuditModal();
-      alert(`Valor real do Meta Ads auditado com sucesso: R$ ${val.toFixed(2).replace('.', ',')}! O DRE foi recalculado em tempo real.`);
     }
 
-    function saveLeadsToStorage() {
-      localStorage.setItem("materna_leads", JSON.stringify(currentLeads));
-      renderKanban();
-      updateDashboardMetrics();
+    // ==========================================
+    // DRAG AND DROP NATIVO NO KANBAN
+    // ==========================================
+    function handleDragStart(e, leadId) {
+      draggedLeadId = leadId;
+      e.dataTransfer.setData("text/plain", leadId);
+      e.dataTransfer.effectAllowed = "move";
     }
 
-    // Atualização Geral de Métricas e DRE com Dados 100% Reais
-    function updateDashboardMetrics() {
-      const validLeads = currentLeads.filter(l => l.status !== 'perdido');
-      const count = validLeads.length;
+    function handleDragOver(e) {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = "move";
+      e.currentTarget.classList.add("drag-hover");
+    }
 
-      // Faturamento real dos contratos fechados
-      const faturamentoTotal = count * 1945.20;
-      
-      // Valor real investido auditado no Meta Ads (100% reembolsável para Kadu)
-      const reembolsoMidiaReal = auditData.valor || 0;
-      const reembolsoGuiaTotal = count * 178.90;
+    function handleDragLeave(e) {
+      e.currentTarget.classList.remove("drag-hover");
+    }
 
-      // Lucro Líquido Real = Faturamento Real - Gasto Real em Mídia
-      const lucroLiquidoTotal = Math.max(0, faturamentoTotal - reembolsoMidiaReal);
+    function handleDrop(e, targetStage) {
+      e.preventDefault();
+      e.currentTarget.classList.remove("drag-hover");
+      const leadId = e.dataTransfer.getData("text/plain") || draggedLeadId;
+      if (!leadId) return;
 
-      // Atualizar Labels do Topo
-      if (document.getElementById("lblValorAuditadoTop")) {
-        document.getElementById("lblValorAuditadoTop").innerText = "R$ " + reembolsoMidiaReal.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
-      }
-      if (document.getElementById("lblUltimaAuditoria")) {
-        document.getElementById("lblUltimaAuditoria").innerText = auditData.data ? new Date(auditData.data + "T00:00:00").toLocaleDateString('pt-BR') : "Hoje";
-      }
-
-      // Métricas Centrais do Topo
-      if (document.getElementById("dashFaturamentoTotal")) {
-        document.getElementById("dashFaturamentoTotal").innerText = "R$ " + faturamentoTotal.toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
-      }
-      if (document.getElementById("dashReembolsoMidiaTotal")) {
-        document.getElementById("dashReembolsoMidiaTotal").innerText = "R$ " + reembolsoMidiaReal.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
-      }
-      if (document.getElementById("dashReembolsoGuiaTotal")) {
-        document.getElementById("dashReembolsoGuiaTotal").innerText = "R$ " + reembolsoGuiaTotal.toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
-      }
-      if (document.getElementById("dashLucroLiquidoTotal")) {
-        document.getElementById("dashLucroLiquidoTotal").innerText = "R$ " + lucroLiquidoTotal.toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
-      }
-
-      // Atualizar DRE Consolidado com dados reais
-      if (document.getElementById("dreMediaValue")) {
-        document.getElementById("dreMediaValue").innerText = reembolsoMidiaReal.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
-      }
-      if (document.getElementById("dreLucroLiquido")) {
-        document.getElementById("dreLucroLiquido").innerText = "R$ " + lucroLiquidoTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
-      }
-
-      // Repasse Real dos Sócios
-      const repasseNathalia = lucroLiquidoTotal * 0.45;
-      const repasseAmanda = lucroLiquidoTotal * 0.225;
-      const repasseRafael = lucroLiquidoTotal * 0.225;
-      const repasseKaduLucro = lucroLiquidoTotal * 0.10;
-
-      if (document.getElementById("dreNathaliaValue")) document.getElementById("dreNathaliaValue").innerText = "R$ " + repasseNathalia.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
-      if (document.getElementById("dreAmandaValue")) document.getElementById("dreAmandaValue").innerText = "R$ " + repasseAmanda.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
-      if (document.getElementById("dreRafaelValue")) document.getElementById("dreRafaelValue").innerText = "R$ " + repasseRafael.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
-      if (document.getElementById("dreKaduLucroValue")) document.getElementById("dreKaduLucroValue").innerText = "R$ " + repasseKaduLucro.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
-
-      // Atualizar Card de Auditoria Real do Meta Ads
-      if (document.getElementById("cardAuditValorInvestido")) {
-        document.getElementById("cardAuditValorInvestido").innerText = "R$ " + reembolsoMidiaReal.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
-      }
-      if (document.getElementById("cardAuditTotalContratos")) {
-        document.getElementById("cardAuditTotalContratos").innerText = `${count} contratos`;
-      }
-      if (document.getElementById("cardAuditCAC")) {
-        const cac = count > 0 ? (reembolsoMidiaReal / count) : 0;
-        document.getElementById("cardAuditCAC").innerText = "R$ " + cac.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
-      }
-      if (document.getElementById("cardAuditROAS")) {
-        const roas = reembolsoMidiaReal > 0 ? (faturamentoTotal / reembolsoMidiaReal).toFixed(1) + 'x' : '0.0x';
-        document.getElementById("cardAuditROAS").innerText = roas;
+      const lead = currentLeads.find(l => l.id === leadId);
+      if (lead && lead.status !== targetStage) {
+        const oldStage = lead.status || 'triagem';
+        lead.status = targetStage;
+        lead.timeline = lead.timeline || [];
+        lead.timeline.unshift({
+          data: new Date().toISOString(),
+          autor: "Kadu (Arrastado no Kanban)",
+          texto: `Lead movimentado de [${oldStage.toUpperCase()}] para [${targetStage.toUpperCase()}].`
+        });
+        saveLeadsToStorage();
       }
     }
 
-    // Renderizar Kanban do CRM
+    // ==========================================
+    // RENDERIZAR KANBAN DO CRM
+    // ==========================================
     function renderKanban() {
       const stages = ['triagem', 'qualificacao', 'documentos', 'advogado', 'aprovado', 'perdido'];
       stages.forEach(st => {
@@ -1052,8 +1100,9 @@
 
         const isNovembro = (lead.partoMes || "").toLowerCase().includes("novembro");
         const card = document.createElement("div");
-        card.className = `lead-card bg-white p-3.5 rounded-2xl border shadow-sm cursor-pointer space-y-2.5 ${isNovembro ? 'border-l-4 border-l-red-500 border-red-200' : 'border-slate-200'}`;
-        card.onclick = () => openLeadModal(lead.id);
+        card.className = `lead-card bg-white p-3.5 rounded-2xl border shadow-sm space-y-2.5 ${isNovembro ? 'border-l-4 border-l-red-500 border-red-200' : 'border-slate-200'}`;
+        card.setAttribute("draggable", "true");
+        card.ondragstart = (e) => handleDragStart(e, lead.id);
 
         card.innerHTML = `
           <div class="flex items-start justify-between gap-2">
@@ -1071,13 +1120,13 @@
             </div>
           </div>
 
-          <div class="pt-1 border-t border-slate-100 flex items-center justify-between text-[11px]">
-            <span class="text-emerald-700 font-black">
-              Bruto: R$ 1.945,20
-            </span>
-            <span class="text-[10px] text-brand-700 font-bold hover:underline">
-              Atender →
-            </span>
+          <div class="pt-1.5 border-t border-slate-100 flex items-center justify-between text-[11px]">
+            <button onclick="event.stopPropagation(); openEditLeadModal('${lead.id}')" class="text-[10px] text-slate-500 hover:text-slate-900 font-bold flex items-center gap-1">
+              <span>✏️ Editar</span>
+            </button>
+            <button onclick="openLeadModal('${lead.id}')" class="text-[10px] text-brand-700 font-black hover:underline flex items-center gap-0.5">
+              <span>Atender →</span>
+            </button>
           </div>
         `;
 
@@ -1092,6 +1141,260 @@
 
     function filterLeads() {
       renderKanban();
+    }
+
+    // ==========================================
+    // MODAL DE EDIÇÃO DO LEAD
+    // ==========================================
+    function openEditLeadModal(leadId) {
+      const lead = currentLeads.find(l => l.id === leadId);
+      if (!lead) return;
+
+      document.getElementById("editLeadId").value = lead.id;
+      document.getElementById("editLeadNome").value = lead.nome;
+      document.getElementById("editLeadWhatsApp").value = lead.whatsapp;
+      document.getElementById("editLeadParto").value = lead.partoMes || "Novembro";
+      document.getElementById("editLeadSituacao").value = lead.situacao || "Trabalhando com Carteira Assinada (CLT)";
+      document.getElementById("editLeadEstagio").value = lead.status || "triagem";
+
+      document.getElementById("editLeadModal").classList.remove("hidden");
+    }
+
+    function closeEditLeadModal() {
+      document.getElementById("editLeadModal").classList.add("hidden");
+    }
+
+    function handleEditLeadSubmit(e) {
+      e.preventDefault();
+      const id = document.getElementById("editLeadId").value;
+      const lead = currentLeads.find(l => l.id === id);
+      if (!lead) return;
+
+      lead.nome = document.getElementById("editLeadNome").value.trim();
+      lead.whatsapp = document.getElementById("editLeadWhatsApp").value.trim();
+      lead.partoMes = document.getElementById("editLeadParto").value;
+      lead.situacao = document.getElementById("editLeadSituacao").value;
+      const newStatus = document.getElementById("editLeadEstagio").value;
+
+      lead.timeline = lead.timeline || [];
+      lead.timeline.unshift({
+        data: new Date().toISOString(),
+        autor: "Kadu (Edição de Card)",
+        texto: `Card atualizado manualmente. Estágio: ${newStatus.toUpperCase()}.`
+      });
+      lead.status = newStatus;
+
+      saveLeadsToStorage();
+      closeEditLeadModal();
+      if (selectedLeadId === id) openLeadModal(id);
+    }
+
+    // ==========================================
+    // MOTOR DE IA & DIAGNÓSTICO INTELIGENTE
+    // ==========================================
+    function runAIDiagnosis() {
+      const lead = currentLeads.find(l => l.id === selectedLeadId);
+      if (!lead) return;
+
+      const msgs = lead.mensagens || [];
+      const isCLT = (lead.situacao || "").toLowerCase().includes("carteira assinada");
+      const isNov = (lead.partoMes || "").toLowerCase().includes("novembro");
+
+      let badgeText = "Em Qualificação";
+      let badgeClass = "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30";
+      let ondeParou = "";
+      let proximaAcao = "";
+
+      if (msgs.length === 0) {
+        badgeText = "Aguardando 1º Contato";
+        badgeClass = "bg-amber-500/20 text-amber-300 border border-amber-500/30";
+        ondeParou = `Lead recebido recentemente. Nenhuma mensagem enviada pelo atendente ainda.`;
+        proximaAcao = isCLT 
+          ? `Disparar o Template 1 (Pré-Parto) alertando que o bebê nasce em ${lead.partoMes} e ela tem direito ao 2º salário-maternidade.` 
+          : `Enviar apresentação urgente avisando sobre o benefício de R$ 6.484,00 pago pelo INSS.`;
+      } else {
+        const lastMsg = msgs[msgs.length - 1];
+        const isFromClient = lastMsg.autor === "Cliente";
+
+        if (isFromClient) {
+          badgeText = "Cliente Respondeu (Prioridade)";
+          badgeClass = "bg-blue-500/20 text-blue-300 border border-blue-500/30 animate-pulse";
+          ondeParou = `A gestante respondeu por último: "${lastMsg.texto.substring(0, 90)}..."`;
+          proximaAcao = `Responder prontamente pelo chat interno e orientar o envio das fotos do atestado da 28ª semana e RG.`;
+        } else {
+          // Última foi do atendente
+          if (lead.status === 'documentos') {
+            badgeText = "Cobrança de Documentos";
+            badgeClass = "bg-purple-500/20 text-purple-300 border border-purple-500/30";
+            ondeParou = `Atendente solicitou documentação pré-parto (Atestado médico / CTPS). Aguardando envio das fotos.`;
+            proximaAcao = `Se passar de 24h sem envio, disparar o Template 3 (Follow-up de Cobrança 24h) alertando sobre o risco do parto acontecer antes.`;
+          } else if (lead.status === 'advogado') {
+            badgeText = "Com Advogado / Em Assinatura";
+            badgeClass = "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30";
+            ondeParou = `Processo formalizado e com advogado credenciado. Aguardando assinatura digital da procuração.`;
+            proximaAcao = `Enviar link do ZapSign para a cliente assinar e protocolar o pedido no INSS.`;
+          } else {
+            badgeText = "Aguardando Resposta da Cliente";
+            badgeClass = "bg-amber-500/20 text-amber-300 border border-amber-500/30";
+            ondeParou = `Atendente enviou a mensagem: "${lastMsg.texto.substring(0, 80)}...". Cliente ainda não visualizou/respondeu.`;
+            proximaAcao = isNov 
+              ? `Como o parto é em Novembro (urgência crítica), fazer follow-up com reforço de que o prazo de contribuição fecha no nascimento.` 
+              : `Aguardar até amanhã para fazer o segundo contato da régua de follow-up.`;
+          }
+        }
+      }
+
+      document.getElementById("aiStatusBadge").innerText = badgeText;
+      document.getElementById("aiStatusBadge").className = `text-[10px] font-black px-2 py-0.5 rounded-full ${badgeClass}`;
+      document.getElementById("aiOndeParou").innerHTML = `<strong>Onde parou:</strong> ${ondeParou}`;
+      document.getElementById("aiProximaAcao").innerHTML = `<strong>💡 Próximo passo sugerido:</strong> ${proximaAcao}`;
+
+      lead.aiDiagnosis = { badgeText, ondeParou, proximaAcao, lastRun: new Date().toISOString() };
+    }
+
+    // Bloco de Notas Fixo
+    function saveFixedCaseNotes() {
+      const lead = currentLeads.find(l => l.id === selectedLeadId);
+      if (!lead) return;
+      lead.notasFixas = document.getElementById("fixedCaseNotes").value;
+      localStorage.setItem("materna_leads", JSON.stringify(currentLeads));
+      
+      const lbl = document.getElementById("lblNotaSalvaStatus");
+      if (lbl) {
+        lbl.innerText = "Salvo ✓";
+        setTimeout(() => { lbl.innerText = "Salvo automaticamente"; }, 1500);
+      }
+    }
+
+    // ==========================================
+    // CHAT INTERNO NO CRM
+    // ==========================================
+    function renderChatMessages(lead) {
+      const container = document.getElementById("chatMessagesContainer");
+      container.innerHTML = "";
+
+      const msgs = lead.mensagens || [];
+      if (msgs.length === 0) {
+        container.innerHTML = `
+          <div class="text-center py-12 text-slate-400 text-xs">
+            <span class="text-3xl block mb-2">💬</span>
+            <p class="font-bold">Nenhuma mensagem trocada ainda.</p>
+            <p class="text-[11px] text-slate-500">Escolha uma resposta rápida abaixo ou digite para iniciar o atendimento.</p>
+          </div>
+        `;
+        return;
+      }
+
+      msgs.forEach(m => {
+        const isClient = m.autor === "Cliente";
+        const div = document.createElement("div");
+        div.className = `flex ${isClient ? 'justify-start' : 'justify-end'}`;
+
+        div.innerHTML = `
+          <div class="max-w-[80%] rounded-2xl p-3 shadow-sm ${isClient ? 'bg-white text-slate-900 border border-slate-200' : 'bg-emerald-700 text-white'}">
+            <div class="flex items-center justify-between gap-3 text-[10px] mb-1 ${isClient ? 'text-slate-400 font-bold' : 'text-emerald-200'}">
+              <span>${m.autor}</span>
+              <span>${m.hora || new Date(m.data).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</span>
+            </div>
+            <p class="text-xs whitespace-pre-line leading-relaxed">${m.texto}</p>
+          </div>
+        `;
+        container.appendChild(div);
+      });
+
+      container.scrollTop = container.scrollHeight;
+    }
+
+    function sendMessageInternal() {
+      const lead = currentLeads.find(l => l.id === selectedLeadId);
+      if (!lead) return;
+
+      const textarea = document.getElementById("modalChatText");
+      const text = textarea.value.trim();
+      if (!text) return;
+
+      lead.mensagens = lead.mensagens || [];
+      lead.mensagens.push({
+        data: new Date().toISOString(),
+        hora: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+        autor: "Atendente CRM",
+        texto: text
+      });
+
+      if (lead.status === 'triagem') {
+        lead.status = 'qualificacao';
+        document.getElementById("modalEstagioSelect").value = 'qualificacao';
+      }
+
+      lead.timeline = lead.timeline || [];
+      lead.timeline.unshift({
+        data: new Date().toISOString(),
+        autor: "Atendente CRM",
+        texto: `Mensagem enviada no chat: "${text.substring(0, 70)}..."`
+      });
+
+      textarea.value = "";
+      saveLeadsToStorage();
+      renderChatMessages(lead);
+      runAIDiagnosis();
+    }
+
+    function simulateLeadReply() {
+      const lead = currentLeads.find(l => l.id === selectedLeadId);
+      if (!lead) return;
+
+      const respostas = [
+        "Oi, boa tarde! Eu fiz meu pré-natal semana passada, já tenho o cartão da gestante. O atestado médico vou pegar na quinta-feira com a médica do posto.",
+        "Trabalho de carteira assinada sim, mas não sabia que tinha direito a esse segundo benefício pelo INSS! O que vocês precisam de mim?",
+        "Consigo mandar as fotos dos meus documentos agora. Vocês conseguem aprovar antes do meu bebê nascer?",
+        "Já tive neném faz 1 mês, ainda dá tempo de pedir o salário maternidade?"
+      ];
+
+      const randomReply = respostas[Math.floor(Math.random() * respostas.length)];
+
+      lead.mensagens = lead.mensagens || [];
+      lead.mensagens.push({
+        data: new Date().toISOString(),
+        hora: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+        autor: "Cliente",
+        texto: randomReply
+      });
+
+      lead.timeline = lead.timeline || [];
+      lead.timeline.unshift({
+        data: new Date().toISOString(),
+        autor: "Cliente",
+        texto: `Cliente respondeu no WhatsApp: "${randomReply.substring(0, 60)}..."`
+      });
+
+      saveLeadsToStorage();
+      renderChatMessages(lead);
+      runAIDiagnosis();
+    }
+
+    function sendWhatsAppDirect() {
+      const lead = currentLeads.find(l => l.id === selectedLeadId);
+      if (!lead) return;
+
+      const text = document.getElementById("modalChatText").value.trim();
+      const cleanPhone = lead.whatsapp.replace(/\D/g, "");
+      const fullPhone = cleanPhone.startsWith("55") ? cleanPhone : ("55" + cleanPhone);
+
+      if (text) {
+        lead.mensagens = lead.mensagens || [];
+        lead.mensagens.push({
+          data: new Date().toISOString(),
+          hora: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+          autor: "Atendente (WhatsApp Web)",
+          texto: text
+        });
+        saveLeadsToStorage();
+        renderChatMessages(lead);
+        runAIDiagnosis();
+      }
+
+      const url = `https://api.whatsapp.com/send?phone=${fullPhone}&text=${encodeURIComponent(text || "Olá! Aqui é da MaternidadePrev.")}`;
+      window.open(url, "_blank");
     }
 
     // Modal de Lead
@@ -1115,14 +1418,13 @@
       }
 
       document.getElementById("modalEstagioSelect").value = lead.status || 'triagem';
-      document.getElementById("modalDataCadastro").innerText = new Date(lead.data).toLocaleString('pt-BR');
+      document.getElementById("fixedCaseNotes").value = lead.notasFixas || "";
 
-      loadTemplate('apresentacao');
+      renderChatMessages(lead);
+      runAIDiagnosis();
 
       document.getElementById("contractBenefitValue").value = lead.contrato?.valorBeneficio || 6484.00;
       document.getElementById("contractCommissionPct").value = lead.contrato?.percentual || 30;
-      document.getElementById("contractMediaCost").value = lead.contrato?.verbaMidia || 200.00;
-      
       calculateCommission();
       updateContractButtons(lead.contrato?.status || 'pendente');
       generateContractDraft(lead);
@@ -1151,7 +1453,6 @@
       });
     }
 
-    // Templates de WhatsApp
     function loadTemplate(type) {
       const lead = currentLeads.find(l => l.id === selectedLeadId);
       if (!lead) return;
@@ -1178,51 +1479,6 @@
       document.getElementById("modalChatText").value = text;
     }
 
-    function sendWhatsAppDirect() {
-      const lead = currentLeads.find(l => l.id === selectedLeadId);
-      if (!lead) return;
-
-      const text = document.getElementById("modalChatText").value;
-      const cleanPhone = lead.whatsapp.replace(/\D/g, "");
-      const fullPhone = cleanPhone.startsWith("55") ? cleanPhone : ("55" + cleanPhone);
-
-      lead.timeline = lead.timeline || [];
-      lead.timeline.unshift({
-        data: new Date().toISOString(),
-        autor: "Atendente",
-        texto: `Mensagem enviada via WhatsApp:\n"${text.substring(0, 100)}..."`
-      });
-
-      if (lead.status === 'triagem') {
-        lead.status = 'qualificacao';
-        document.getElementById("modalEstagioSelect").value = 'qualificacao';
-      }
-
-      saveLeadsToStorage();
-      renderTimeline(lead);
-
-      const url = `https://api.whatsapp.com/send?phone=${fullPhone}&text=${encodeURIComponent(text)}`;
-      window.open(url, "_blank");
-    }
-
-    function saveMessageToTimeline() {
-      const lead = currentLeads.find(l => l.id === selectedLeadId);
-      if (!lead) return;
-      const text = document.getElementById("modalChatText").value;
-      if (!text.trim()) return;
-
-      lead.timeline = lead.timeline || [];
-      lead.timeline.unshift({
-        data: new Date().toISOString(),
-        autor: "Atendente (Nota)",
-        texto: text
-      });
-
-      saveLeadsToStorage();
-      renderTimeline(lead);
-      alert("Nota salva no histórico!");
-    }
-
     function updateLeadStageFromModal() {
       const lead = currentLeads.find(l => l.id === selectedLeadId);
       if (!lead) return;
@@ -1233,40 +1489,20 @@
       lead.timeline = lead.timeline || [];
       lead.timeline.unshift({
         data: new Date().toISOString(),
-        autor: "Sistema",
+        autor: "Atendente (Seletor)",
         texto: `Status alterado para: ${novoEstagio.toUpperCase()}`
       });
 
       saveLeadsToStorage();
       renderTimeline(lead);
+      runAIDiagnosis();
     }
 
-    // Cálculo Contábil do Modal
     function calculateCommission() {
       const benef = parseFloat(document.getElementById("contractBenefitValue").value) || 0;
       const pct = parseFloat(document.getElementById("contractCommissionPct").value) || 0;
-      const midia = parseFloat(document.getElementById("contractMediaCost")?.value) || 200.00;
-      
-      const honorarios = (benef * pct) / 100; // R$ 1.945,20
-      const guiaINSS = 178.90;
-      const totalRetido = honorarios + guiaINSS;
-
-      const lucroLiquidoReal = Math.max(0, honorarios - midia);
-
-      document.getElementById("contractCommissionValue").innerText = "R$ " + lucroLiquidoReal.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
-      if (document.getElementById("modalTotalRetido")) {
-        document.getElementById("modalTotalRetido").innerText = "R$ " + totalRetido.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
-      }
-
-      const splitNathalia = lucroLiquidoReal * 0.45;
-      const splitAmanda = lucroLiquidoReal * 0.225;
-      const splitRafael = lucroLiquidoReal * 0.225;
-      const splitKaduLucro = lucroLiquidoReal * 0.10;
-
-      if (document.getElementById("modalSplit_nathalia")) document.getElementById("modalSplit_nathalia").innerText = "R$ " + splitNathalia.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
-      if (document.getElementById("modalSplit_amanda")) document.getElementById("modalSplit_amanda").innerText = "R$ " + splitAmanda.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
-      if (document.getElementById("modalSplit_rafael")) document.getElementById("modalSplit_rafael").innerText = "R$ " + splitRafael.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
-      if (document.getElementById("modalSplit_kadu")) document.getElementById("modalSplit_kadu").innerText = "R$ " + splitKaduLucro.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+      const honorarios = (benef * pct) / 100;
+      document.getElementById("contractCommissionValue").innerText = "R$ " + honorarios.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
 
       const lead = currentLeads.find(l => l.id === selectedLeadId);
       if (lead) {
@@ -1274,8 +1510,6 @@
         lead.contrato.valorBeneficio = benef;
         lead.contrato.percentual = pct;
         lead.contrato.valorComissao = honorarios;
-        lead.contrato.verbaMidia = midia;
-        lead.contrato.lucroLiquido = lucroLiquidoReal;
         generateContractDraft(lead);
         saveLeadsToStorage();
       }
@@ -1306,6 +1540,7 @@
       updateContractButtons(st);
       saveLeadsToStorage();
       renderTimeline(lead);
+      runAIDiagnosis();
     }
 
     function updateContractButtons(st) {
@@ -1383,7 +1618,7 @@ Data: ${new Date().toLocaleDateString('pt-BR')}`;
       lead.timeline = lead.timeline || [];
       lead.timeline.unshift({
         data: new Date().toISOString(),
-        autor: "Equipe CRM",
+        autor: "Kadu (Nota Manual)",
         texto: note
       });
 
@@ -1392,6 +1627,7 @@ Data: ${new Date().toLocaleDateString('pt-BR')}`;
       renderTimeline(lead);
     }
 
+    // Modal de Lead Manual
     function openNewLeadModal() {
       document.getElementById("newLeadModal").classList.remove("hidden");
     }
@@ -1421,20 +1657,9 @@ Data: ${new Date().toLocaleDateString('pt-BR')}`;
         status: 'triagem',
         prioridade: isNov ? 'critica' : 'alta',
         canal: 'Cadastro Manual no CRM',
-        contrato: {
-          valorBeneficio: 6484.00,
-          percentual: 30,
-          valorComissao: 1945.20,
-          verbaMidia: 200.00,
-          status: 'pendente'
-        },
-        timeline: [
-          {
-            data: new Date().toISOString(),
-            autor: "Equipe CRM",
-            texto: `Lead inserido manualmente com previsão para ${partoMes}.`
-          }
-        ]
+        contrato: { valorBeneficio: 6484.00, percentual: 30, valorComissao: 1945.20, status: 'pendente' },
+        mensagens: [],
+        timeline: [{ data: new Date().toISOString(), autor: "Kadu", texto: `Lead manual cadastrado.` }]
       };
 
       currentLeads.unshift(newLead);
@@ -1442,6 +1667,127 @@ Data: ${new Date().toLocaleDateString('pt-BR')}`;
       closeNewLeadModal();
       form.reset();
       openLeadModal(newLead.id);
+    }
+
+    // ==========================================
+    // TABELA DA AUDITORIA PERMANENTE
+    // ==========================================
+    function renderAuditTable() {
+      const tbody = document.getElementById("auditTableBody");
+      const search = (document.getElementById("auditSearchInput")?.value || "").toLowerCase().trim();
+      tbody.innerHTML = "";
+
+      let filtered = currentLeads;
+      if (search) {
+        filtered = currentLeads.filter(l => 
+          (l.nome || "").toLowerCase().includes(search) || 
+          (l.whatsapp || "").toLowerCase().includes(search) ||
+          (l.status || "").toLowerCase().includes(search) ||
+          (l.partoMes || "").toLowerCase().includes(search)
+        );
+      }
+
+      document.getElementById("auditCountTotal").innerText = currentLeads.length;
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="8" class="p-6 text-center text-slate-400 italic">Nenhum registro encontrado no arquivo permanente.</td></tr>`;
+        return;
+      }
+
+      filtered.forEach(lead => {
+        const tr = document.createElement("tr");
+        tr.className = "hover:bg-slate-50 transition";
+        const isNov = (lead.partoMes || "").toLowerCase().includes("novembro");
+        const statusMap = {
+          triagem: '1. Novos Leads',
+          qualificacao: '2. Em Atendimento',
+          documentos: '3. Aguard. Documentos',
+          advogado: '4. Advogado Parceiro',
+          aprovado: '5. Concedido / Pago',
+          perdido: '6. Não Qualificado (Preservado)'
+        };
+
+        tr.innerHTML = `
+          <td class="p-3 text-slate-500 text-[11px] whitespace-nowrap">${new Date(lead.data).toLocaleDateString('pt-BR')}</td>
+          <td class="p-3 font-bold text-slate-900">${lead.nome}</td>
+          <td class="p-3 text-slate-600 font-mono text-[11px]">${lead.whatsapp}</td>
+          <td class="p-3"><span class="px-2 py-0.5 rounded text-[10px] font-bold ${isNov ? 'bg-red-100 text-red-700 font-black' : 'bg-slate-100 text-slate-700'}">${lead.partoMes}</span></td>
+          <td class="p-3 text-[11px] text-slate-600 truncate max-w-[140px]">${lead.situacao}</td>
+          <td class="p-3"><span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-slate-100 text-slate-800">${statusMap[lead.status] || lead.status}</span></td>
+          <td class="p-3 text-[11px] text-slate-500 max-w-[200px] truncate">${lead.aiDiagnosis?.ondeParou || 'Aguardando 1º contato'}</td>
+          <td class="p-3 text-right whitespace-nowrap">
+            <button onclick="openLeadModal('${lead.id}')" class="text-xs text-brand-700 font-bold hover:underline mr-2">Abrir</button>
+            <button onclick="openEditLeadModal('${lead.id}')" class="text-xs text-slate-500 font-bold hover:underline">Editar</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // Atualização Geral de Métricas e DRE com Dados 100% Reais
+    function updateDashboardMetrics() {
+      const validLeads = currentLeads.filter(l => l.status !== 'perdido');
+      const count = validLeads.length;
+
+      const faturamentoTotal = count * 1945.20;
+      const reembolsoMidiaReal = auditData.valor || 0;
+      const reembolsoGuiaTotal = count * 178.90;
+      const lucroLiquidoTotal = Math.max(0, faturamentoTotal - reembolsoMidiaReal);
+
+      if (document.getElementById("lblValorAuditadoTop")) {
+        document.getElementById("lblValorAuditadoTop").innerText = "R$ " + reembolsoMidiaReal.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+      }
+      if (document.getElementById("lblUltimaAuditoria")) {
+        document.getElementById("lblUltimaAuditoria").innerText = auditData.data ? new Date(auditData.data + "T00:00:00").toLocaleDateString('pt-BR') : "Hoje";
+      }
+
+      if (document.getElementById("dashFaturamentoTotal")) {
+        document.getElementById("dashFaturamentoTotal").innerText = "R$ " + faturamentoTotal.toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+      }
+      if (document.getElementById("dashReembolsoMidiaTotal")) {
+        document.getElementById("dashReembolsoMidiaTotal").innerText = "R$ " + reembolsoMidiaReal.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+      }
+      if (document.getElementById("dashReembolsoGuiaTotal")) {
+        document.getElementById("dashReembolsoGuiaTotal").innerText = "R$ " + reembolsoGuiaTotal.toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+      }
+      if (document.getElementById("dashLucroLiquidoTotal")) {
+        document.getElementById("dashLucroLiquidoTotal").innerText = "R$ " + lucroLiquidoTotal.toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+      }
+
+      if (document.getElementById("dreFaturamentoBruto")) {
+        document.getElementById("dreFaturamentoBruto").innerText = "R$ " + faturamentoTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+      }
+      if (document.getElementById("dreMediaValue")) {
+        document.getElementById("dreMediaValue").innerText = reembolsoMidiaReal.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+      }
+      if (document.getElementById("dreLucroLiquido")) {
+        document.getElementById("dreLucroLiquido").innerText = "R$ " + lucroLiquidoTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+      }
+
+      const repasseNathalia = lucroLiquidoTotal * 0.45;
+      const repasseAmanda = lucroLiquidoTotal * 0.225;
+      const repasseRafael = lucroLiquidoTotal * 0.225;
+      const repasseKaduLucro = lucroLiquidoTotal * 0.10;
+
+      if (document.getElementById("dreNathaliaValue")) document.getElementById("dreNathaliaValue").innerText = "R$ " + repasseNathalia.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+      if (document.getElementById("dreAmandaValue")) document.getElementById("dreAmandaValue").innerText = "R$ " + repasseAmanda.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+      if (document.getElementById("dreRafaelValue")) document.getElementById("dreRafaelValue").innerText = "R$ " + repasseRafael.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+      if (document.getElementById("dreKaduLucroValue")) document.getElementById("dreKaduLucroValue").innerText = "R$ " + repasseKaduLucro.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+
+      if (document.getElementById("cardAuditValorInvestido")) {
+        document.getElementById("cardAuditValorInvestido").innerText = "R$ " + reembolsoMidiaReal.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+      }
+      if (document.getElementById("cardAuditTotalContratos")) {
+        document.getElementById("cardAuditTotalContratos").innerText = `${count} contratos`;
+      }
+      if (document.getElementById("cardAuditCAC")) {
+        const cac = count > 0 ? (reembolsoMidiaReal / count) : 0;
+        document.getElementById("cardAuditCAC").innerText = "R$ " + cac.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+      }
+      if (document.getElementById("cardAuditROAS")) {
+        const roas = reembolsoMidiaReal > 0 ? (faturamentoTotal / reembolsoMidiaReal).toFixed(1) + 'x' : '0.0x';
+        document.getElementById("cardAuditROAS").innerText = roas;
+      }
     }
 
     function generateSampleLeads() {
@@ -1456,7 +1802,12 @@ Data: ${new Date().toLocaleDateString('pt-BR')}`;
           status: "triagem",
           prioridade: "critica",
           canal: "Instagram Ads (Criativo Novembro)",
-          contrato: { valorBeneficio: 6484.00, percentual: 30, valorComissao: 1945.20, verbaMidia: 200.00, status: "pendente" },
+          contrato: { valorBeneficio: 6484.00, percentual: 30, valorComissao: 1945.20, status: "pendente" },
+          notasFixas: "Gestante no 8º mês. Trabalha como operadora de caixa CLT. Interessada no 2º salário.",
+          mensagens: [
+            { data: new Date(Date.now() - 1000 * 60 * 10).toISOString(), autor: "Atendente CRM", texto: "Olá Juliana! Vi que você trabalha CLT e seu bebê nasce em Novembro. Sabia do 2º salário maternidade?" },
+            { data: new Date(Date.now() - 1000 * 60 * 5).toISOString(), autor: "Cliente", texto: "Oi! Não sabia disso, como funciona? O médico já me deu o atestado do 8º mês." }
+          ],
           timeline: [{ data: new Date().toISOString(), autor: "Landing Page", texto: "Cadastrou-se via anúncio de Novembro." }]
         },
         {
@@ -1469,8 +1820,13 @@ Data: ${new Date().toLocaleDateString('pt-BR')}`;
           status: "qualificacao",
           prioridade: "critica",
           canal: "Instagram Ads",
-          contrato: { valorBeneficio: 6484.00, percentual: 30, valorComissao: 1945.20, verbaMidia: 200.00, status: "pendente" },
-          timeline: [{ data: new Date().toISOString(), autor: "Atendente", texto: "Mensagem do 2º Salário enviada." }]
+          contrato: { valorBeneficio: 6484.00, percentual: 30, valorComissao: 1945.20, status: "pendente" },
+          notasFixas: "Enviou foto da CTPS. Falta o atestado médico com o carimbo do CRM.",
+          mensagens: [
+            { data: new Date(Date.now() - 1000 * 60 * 120).toISOString(), autor: "Atendente CRM", texto: "Camila, para dar entrada precisamos do atestado pré-natal de 28+ semanas." },
+            { data: new Date(Date.now() - 1000 * 60 * 60).toISOString(), autor: "Cliente", texto: "Minha consulta é na quinta, aí já pego com ele." }
+          ],
+          timeline: [{ data: new Date().toISOString(), autor: "Atendente", texto: "Mensagem enviada." }]
         },
         {
           id: 'lead_' + (Date.now() - 1000 * 60 * 1440),
@@ -1482,8 +1838,12 @@ Data: ${new Date().toLocaleDateString('pt-BR')}`;
           status: "documentos",
           prioridade: "alta",
           canal: "Landing Page",
-          contrato: { valorBeneficio: 6484.00, percentual: 30, valorComissao: 1945.20, verbaMidia: 200.00, status: "enviado" },
-          timeline: [{ data: new Date().toISOString(), autor: "Landing Page", texto: "Atestado 30 semanas solicitado." }]
+          contrato: { valorBeneficio: 6484.00, percentual: 30, valorComissao: 1945.20, status: "enviado" },
+          notasFixas: "Desempregada há 8 meses. Está no período de graça do INSS.",
+          mensagens: [
+            { data: new Date(Date.now() - 1000 * 60 * 500).toISOString(), autor: "Atendente CRM", texto: "Beatriz, documentação prévia conferida! Estamos gerando o termo de assessoria." }
+          ],
+          timeline: [{ data: new Date().toISOString(), autor: "Landing Page", texto: "Atestado recebido." }]
         },
         {
           id: 'lead_' + (Date.now() - 1000 * 60 * 2880),
@@ -1495,14 +1855,19 @@ Data: ${new Date().toLocaleDateString('pt-BR')}`;
           status: "advogado",
           prioridade: "critica",
           canal: "Instagram Ads",
-          contrato: { valorBeneficio: 6484.00, percentual: 30, valorComissao: 1945.20, verbaMidia: 200.00, status: "assinado" },
-          timeline: [{ data: new Date().toISOString(), autor: "Advogado", texto: "Protocolado com urgência pré-parto." }]
+          contrato: { valorBeneficio: 6484.00, percentual: 30, valorComissao: 1945.20, status: "assinado" },
+          notasFixas: "Contrato assinado no ZapSign. Nathália já realizou o protocolo no INSS sob urgência pré-parto.",
+          mensagens: [
+            { data: new Date(Date.now() - 1000 * 60 * 1000).toISOString(), autor: "Atendente CRM", texto: "Mariana, seu processo já está protocolado no INSS pelo jurídico!" },
+            { data: new Date(Date.now() - 1000 * 60 * 800).toISOString(), autor: "Cliente", texto: "Muito obrigada! Fico no aguardo do aviso do saque." }
+          ],
+          timeline: [{ data: new Date().toISOString(), autor: "Advogado", texto: "Protocolado no INSS." }]
         }
       ];
 
       currentLeads = [...samples, ...currentLeads];
       saveLeadsToStorage();
-      alert("4 leads de teste carregados!");
+      alert("4 leads com conversas reais carregados para teste!");
     }
 
     function exportLeadsCSV() {
@@ -1510,14 +1875,14 @@ Data: ${new Date().toLocaleDateString('pt-BR')}`;
         alert("Nenhum lead disponível.");
         return;
       }
-      let csv = "ID;Data;Nome;WhatsApp;Mes_Parto;Situacao;Estagio;Beneficio;ComissaoBruta;Midia\n";
+      let csv = "ID;Data;Nome;WhatsApp;Mes_Parto;Situacao;Estagio;Beneficio;ComissaoBruta;DiagnosticoIA\n";
       currentLeads.forEach(l => {
-        csv += `"${l.id}";"${new Date(l.data).toLocaleDateString('pt-BR')}";"${l.nome}";"${l.whatsapp}";"${l.partoMes}";"${l.situacao}";"${l.status}";"${l.contrato?.valorBeneficio || 6484}";"${l.contrato?.valorComissao || 1945.20}";"${l.contrato?.verbaMidia || 200}"\n`;
+        csv += `"${l.id}";"${new Date(l.data).toLocaleDateString('pt-BR')}";"${l.nome}";"${l.whatsapp}";"${l.partoMes}";"${l.situacao}";"${l.status}";"${l.contrato?.valorBeneficio || 6484}";"${l.contrato?.valorComissao || 1945.20}";"${l.aiDiagnosis?.ondeParou || ''}"\n`;
       });
       const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
       const link = document.createElement("a");
       link.href = URL.createObjectURL(blob);
-      link.download = `maternidadeprev_gestao_${new Date().toISOString().slice(0,10)}.csv`;
+      link.download = `maternidadeprev_auditoria_${new Date().toISOString().slice(0,10)}.csv`;
       link.click();
     }
   </script>
