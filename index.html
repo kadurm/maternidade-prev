@@ -133,7 +133,7 @@
 
       <!-- Subheadline Explicativa -->
       <p class="text-slate-200 text-sm sm:text-base leading-relaxed mb-6 max-w-2xl mx-auto">
-        Milhares de gestantes perdem prazos ou esperam meses desnecessários porque não solicitam o <strong class="text-white">Salário-Maternidade (até R$ 5.600 a R$ 12.000+)</strong> com a antecedência necessária. Quem solicita na reta final tem prioridade na análise documental.
+        O INSS paga <strong class="text-white">4 parcelas de R$ 1.621,00 (Total de R$ 6.484,00)</strong>. Se você trabalha de carteira assinada (CLT), tem direito a receber um <strong class="text-amber-300 underline">SEGUNDO Salário-Maternidade extra</strong> — mas a contribuição e o processo <strong class="text-white">têm que ser iniciados antes do bebê nascer!</strong>
       </p>
 
       <!-- Contador / Notificação de vagas -->
@@ -363,13 +363,23 @@
     </div>
 
     <div class="space-y-3 text-left">
-      <details class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 group">
+      <details class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 group" open>
         <summary class="font-bold text-slate-900 text-sm cursor-pointer flex justify-between items-center">
-          <span>Estou desempregada. Ainda assim posso ter direito ao benefício?</span>
+          <span>Trabalho com Carteira Assinada (CLT). Tenho direito a um SEGUNDO salário-maternidade?</span>
           <span class="text-brand-600 group-open:rotate-180 transition">▼</span>
         </summary>
         <p class="text-xs sm:text-sm text-slate-600 mt-2 leading-relaxed">
-          <strong>SIM!</strong> Esse é um dos maiores mitos. Se você trabalhou de carteira assinada ou contribuiu com o INSS nos últimos 12 a 24 meses (ou até 36 meses em alguns casos), você ainda pode estar no chamado "Período de Graça" e ter direito ao valor integral.
+          <strong class="text-brand-700">SIM!</strong> Essa é a maior oportunidade que a maioria das gestantes não conhece. A lei assegura a proteção previdenciária para cada atividade exercida. Quem trabalha CLT e exerce qualquer atividade autônoma/extra tem direito a um <strong>SEGUNDO Salário-Maternidade</strong>. Nós cuidamos da contribuição necessária, mas <strong>o processo precisa obrigatoriamente ser iniciado antes do bebê nascer!</strong>
+        </p>
+      </details>
+
+      <details class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 group">
+        <summary class="font-bold text-slate-900 text-sm cursor-pointer flex justify-between items-center">
+          <span>Estou desempregada. Ainda posso receber o benefício?</span>
+          <span class="text-brand-600 group-open:rotate-180 transition">▼</span>
+        </summary>
+        <p class="text-xs sm:text-sm text-slate-600 mt-2 leading-relaxed">
+          <strong>SIM!</strong> Se você já trabalhou de carteira assinada antes da gestação (mesmo que esteja sem registro durante a gravidez), você mantém a qualidade de segurada e pode solicitar o benefício integral até a criança completar 5 anos de idade.
         </p>
       </details>
 
@@ -379,7 +389,17 @@
           <span class="text-brand-600 group-open:rotate-180 transition">▼</span>
         </summary>
         <p class="text-xs sm:text-sm text-slate-600 mt-2 leading-relaxed">
-          O valor pago pelo INSS equivale a 4 meses de salários (não pode ser inferior ao salário mínimo e pode chegar ao teto previdenciário, totalizando de R$ 5.600 a mais de R$ 12.000,00, dependendo do seu histórico).
+          O benefício pago pelo INSS é composto por <strong>4 parcelas de R$ 1.621,00</strong>, totalizando <strong>R$ 6.484,00</strong> depositados diretamente na sua conta bancária pelo INSS.
+        </p>
+      </details>
+
+      <details class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 group">
+        <summary class="font-bold text-slate-900 text-sm cursor-pointer flex justify-between items-center">
+          <span>Por que é obrigatório iniciar o processo antes do bebê nascer?</span>
+          <span class="text-brand-600 group-open:rotate-180 transition">▼</span>
+        </summary>
+        <p class="text-xs sm:text-sm text-slate-600 mt-2 leading-relaxed">
+          Para garantir o <strong>segundo salário-maternidade</strong> (ou a regularização imediata de carência), o INSS exige que a inscrição e contribuição ocorram antes do fato gerador (parto). Após o nascimento, a mãe empregada CLT perde o direito a essa parcela extra de R$ 6.484,00!
         </p>
       </details>
 
@@ -523,10 +543,10 @@
         prioridade: isUrgent ? 'critica' : 'alta',
         canal: 'Landing Page (Meta Ads)',
         contrato: {
-          valorBeneficio: 5648.00,
+          valorBeneficio: 6484.00, // 4 parcelas de R$ 1.621,00
           percentual: 30,
-          valorComissao: 1694.40,
-          status: 'pendente' // pendente, gerado, assinado, pago
+          valorComissao: 1945.20, // 30% de comissão no êxito
+          status: 'pendente'
         },
         timeline: [
           {
