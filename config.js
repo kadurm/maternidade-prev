@@ -23,8 +23,8 @@ const MATERNA_CONFIG = {
   instagramUrl: "https://www.instagram.com/maternidade.prev/",
   instagramHandle: "@maternidade.prev",
 
-  // Pixel do Facebook / Meta Ads (deixe em branco se for colocar via GTM)
-  metaPixelId: "",
+  // Pixel do Facebook / Meta Ads Oficial
+  metaPixelId: "1795208765028584",
 
   // Estimativa de valor do benefício auditado pela especialista (4x R$ 1.621,00)
   benefitValue: "R$ 6.484,00 (4x de R$ 1.621,00)",

@@ -67,21 +67,27 @@
   <!-- Script de Configuração Modular -->
   <script src="config.js"></script>
 
-  <!-- Script dinâmico para Meta Pixel se configurado -->
+  <!-- Meta Pixel Code Oficial -->
   <script>
-    if (typeof MATERNA_CONFIG !== 'undefined' && MATERNA_CONFIG.metaPixelId) {
-      !function(f,b,e,v,n,t,s)
-      {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-      n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-      if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-      n.queue=[];t=b.createElement(e);t.async=!0;
-      t.src=v;s=b.getElementsByTagName(e)[0];
-      s.parentNode.insertBefore(t,s)}(window, document,'script',
-      'https://connect.facebook.net/en_US/fbevents.js');
-      fbq('init', MATERNA_CONFIG.metaPixelId);
-      fbq('track', 'PageView');
-    }
+    !function(f,b,e,v,n,t,s)
+    {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+    n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+    if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+    n.queue=[];t=b.createElement(e);t.async=!0;
+    t.src=v;s=b.getElementsByTagName(e)[0];
+    s.parentNode.insertBefore(t,s)}(window, document,'script',
+    'https://connect.facebook.net/en_US/fbevents.js');
+    fbq('init', '1795208765028584');
+    fbq('track', 'PageView');
+    fbq('track', 'ViewContent', {
+      content_name: 'Landing_Page_MaternidadePrev',
+      content_category: 'Assessoria_Previdenciaria'
+    });
   </script>
+  <noscript>
+    <img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=1795208765028584&ev=PageView&noscript=1" />
+  </noscript>
+  <!-- End Meta Pixel Code -->
 </head>
 <body class="bg-slate-50 text-slate-900 font-sans antialiased selection:bg-brand-600 selection:text-white">
 
@@ -504,14 +510,46 @@
         <span>Redirecionando para atendimento...</span>
       `;
 
-      // Disparar evento de Lead no Meta Pixel (se existir)
+      // Identificador único para deduplicação entre Pixel Browser e CAPI Server
+      const eventId = 'lead_' + Date.now();
+
+      // 1. Disparar eventos no Navegador (Meta Pixel)
       if (typeof fbq === 'function') {
         fbq('track', 'Lead', {
-          content_name: 'SalarioMaternidade_Lead',
+          content_name: 'Salario_Maternidade_Lead',
+          currency: 'BRL',
+          value: 1945.20,
           month_priority: partoMes,
           status_job: situacao
-        });
+        }, { eventID: eventId });
+
+        fbq('track', 'CompleteRegistration', {
+          content_name: 'Inscricao_Triagem',
+          currency: 'BRL',
+          value: 1945.20,
+          status: true
+        }, { eventID: eventId + '_reg' });
       }
+
+      // 2. Disparar na API de Conversões (Meta CAPI Server-side)
+      try {
+        fetch('/api/meta-capi', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            event_name: 'Lead',
+            event_id: eventId,
+            nome: nome,
+            whatsapp: whatsapp,
+            custom_data: {
+              currency: 'BRL',
+              value: 1945.20,
+              month_priority: partoMes,
+              status_job: situacao
+            }
+          })
+        }).catch(() => {});
+      } catch(e) {}
 
       // Montar mensagem para o WhatsApp
       const rawPhone = (typeof MATERNA_CONFIG !== 'undefined' && MATERNA_CONFIG.whatsappNumber) 
