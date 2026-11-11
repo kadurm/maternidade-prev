@@ -15,6 +15,10 @@ const MATERNA_CONFIG = {
   // Número do WhatsApp oficial que receberá os leads (Direito Materno: +55 38 9149-7475)
   whatsappNumber: "553891497475",
 
+  // Supabase Cloud Database (Sincronização Centralizada de Leads em Tempo Real)
+  supabaseUrl: "https://edutujipdgzrqvjloguk.supabase.co",
+  supabaseKey: "sb_publishable_grMQWI-9sz0sSkQfINM81Q_s-JCq_Zz",
+
   // Nome exibido da assessoria
   brandName: "MaternidadePrev",
   brandLegal: "Direito Materno - Assessoria Especializada",

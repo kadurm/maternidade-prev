@@ -970,6 +970,79 @@
       loadAuditFromStorage();
       renderKanban();
       updateDashboardMetrics();
+      loadLeadsFromSupabase();
+    }
+
+    async function loadLeadsFromSupabase() {
+      if (typeof MATERNA_CONFIG === 'undefined' || !MATERNA_CONFIG.supabaseUrl) return;
+      try {
+        const res = await fetch(`${MATERNA_CONFIG.supabaseUrl}/rest/v1/leads?order=created_at.desc`, {
+          headers: {
+            'apikey': MATERNA_CONFIG.supabaseKey,
+            'Authorization': 'Bearer ' + MATERNA_CONFIG.supabaseKey
+          }
+        });
+        if (res.ok) {
+          const cloudLeads = await res.json();
+          if (Array.isArray(cloudLeads) && cloudLeads.length > 0) {
+            const map = new Map();
+            currentLeads.forEach(l => map.set(l.id, l));
+            cloudLeads.forEach(cl => {
+              const formatted = {
+                id: cl.id,
+                data: cl.created_at,
+                nome: cl.nome,
+                whatsapp: cl.whatsapp,
+                partoMes: cl.parto_mes,
+                situacao: cl.situacao,
+                status: cl.status || 'triagem',
+                prioridade: cl.prioridade || 'alta',
+                canal: cl.canal || 'Landing Page',
+                ...(cl.dados || {})
+              };
+              map.set(cl.id, formatted);
+            });
+            currentLeads = Array.from(map.values()).sort((a,b) => new Date(b.data) - new Date(a.data));
+            localStorage.setItem("materna_leads", JSON.stringify(currentLeads));
+            renderKanban();
+            updateDashboardMetrics();
+            if (!document.getElementById("view_auditoria").classList.contains("hidden")) {
+              renderAuditTable();
+            }
+          }
+        }
+      } catch(e) {
+        console.warn('Supabase offline ou tabela pendente:', e);
+      }
+    }
+
+    async function syncLeadToSupabase(lead) {
+      if (typeof MATERNA_CONFIG === 'undefined' || !MATERNA_CONFIG.supabaseUrl || !lead) return;
+      try {
+        fetch(`${MATERNA_CONFIG.supabaseUrl}/rest/v1/leads?id=eq.${lead.id}`, {
+          method: 'PATCH',
+          headers: {
+            'apikey': MATERNA_CONFIG.supabaseKey,
+            'Authorization': 'Bearer ' + MATERNA_CONFIG.supabaseKey,
+            'Content-Type': 'application/json',
+            'Prefer': 'return=minimal'
+          },
+          body: JSON.stringify({
+            status: lead.status,
+            nome: lead.nome,
+            whatsapp: lead.whatsapp,
+            parto_mes: lead.partoMes,
+            situacao: lead.situacao,
+            dados: {
+              contrato: lead.contrato,
+              timeline: lead.timeline,
+              mensagens: lead.mensagens,
+              notasFixas: lead.notasFixas,
+              aiDiagnosis: lead.aiDiagnosis
+            }
+          })
+        }).catch(() => {});
+      } catch(e) {}
     }
 
     function loadLeadsFromStorage() {
@@ -1061,6 +1134,7 @@
           texto: `Lead movimentado de [${oldStage.toUpperCase()}] para [${targetStage.toUpperCase()}].`
         });
         saveLeadsToStorage();
+        syncLeadToSupabase(lead);
       }
     }
 
@@ -1194,6 +1268,7 @@
       lead.status = newStatus;
 
       saveLeadsToStorage();
+      syncLeadToSupabase(lead);
       closeEditLeadModal();
       if (selectedLeadId === id) openLeadModal(id);
     }
@@ -1272,6 +1347,7 @@
       if (!lead) return;
       lead.notasFixas = document.getElementById("fixedCaseNotes").value;
       localStorage.setItem("materna_leads", JSON.stringify(currentLeads));
+      syncLeadToSupabase(lead);
       
       const lbl = document.getElementById("lblNotaSalvaStatus");
       if (lbl) {
@@ -1349,6 +1425,7 @@
 
       textarea.value = "";
       saveLeadsToStorage();
+      syncLeadToSupabase(lead);
       renderChatMessages(lead);
       runAIDiagnosis();
     }
@@ -1382,6 +1459,7 @@
       });
 
       saveLeadsToStorage();
+      syncLeadToSupabase(lead);
       renderChatMessages(lead);
       runAIDiagnosis();
     }
@@ -1403,6 +1481,7 @@
           texto: text
         });
         saveLeadsToStorage();
+        syncLeadToSupabase(lead);
         renderChatMessages(lead);
         runAIDiagnosis();
       }
@@ -1530,6 +1609,7 @@
         lead.contrato.valorComissao = honorarios;
         generateContractDraft(lead);
         saveLeadsToStorage();
+        syncLeadToSupabase(lead);
       }
     }
 

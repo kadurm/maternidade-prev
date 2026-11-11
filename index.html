@@ -600,6 +600,35 @@
       leads.unshift(newLead);
       localStorage.setItem("materna_leads", JSON.stringify(leads));
 
+      // 3. Salvar no Supabase Cloud Database (Blindagem contra perda de leads)
+      try {
+        if (typeof MATERNA_CONFIG !== 'undefined' && MATERNA_CONFIG.supabaseUrl && MATERNA_CONFIG.supabaseKey) {
+          fetch(`${MATERNA_CONFIG.supabaseUrl}/rest/v1/leads`, {
+            method: 'POST',
+            headers: {
+              'apikey': MATERNA_CONFIG.supabaseKey,
+              'Authorization': 'Bearer ' + MATERNA_CONFIG.supabaseKey,
+              'Content-Type': 'application/json',
+              'Prefer': 'return=minimal'
+            },
+            body: JSON.stringify({
+              id: newLead.id,
+              nome: newLead.nome,
+              whatsapp: newLead.whatsapp,
+              parto_mes: newLead.partoMes,
+              situacao: newLead.situacao,
+              status: 'triagem',
+              prioridade: newLead.prioridade,
+              canal: 'Landing Page (Meta Ads)',
+              dados: {
+                contrato: newLead.contrato,
+                timeline: newLead.timeline
+              }
+            })
+          }).catch(() => {});
+        }
+      } catch(e) {}
+
       // Redireciona em 600ms
       setTimeout(() => {
         window.location.href = whatsappUrl;
