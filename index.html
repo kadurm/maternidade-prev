@@ -552,17 +552,17 @@
         }).catch(() => {});
       } catch(e) {}
 
-      // Montar mensagem para o WhatsApp
+      // Montar mensagem para o WhatsApp Oficial (Direito Materno: +55 38 9149-7475)
       const rawPhone = (typeof MATERNA_CONFIG !== 'undefined' && MATERNA_CONFIG.whatsappNumber) 
         ? MATERNA_CONFIG.whatsappNumber 
-        : "5511999999999";
+        : "553891497475";
 
-      let msg = `🚨 *NOVA SOLICITAÇÃO DE SALÁRIO-MATERNIDADE (URGENTE)* 🚨\n\n`;
-      msg += `👤 *Nome:* ${nome}\n`;
-      msg += `📱 *WhatsApp:* ${whatsapp}\n`;
-      msg += `🗓️ *Previsão do Parto:* ${partoMes} (Prioridade)\n`;
-      msg += `💼 *Situação:* ${situacao}\n\n`;
-      msg += `*Mensagem:* Olá! Fiz a triagem no site da MaternidadePrev e quero garantir meu benefício antes do nascimento do meu bebê. Como podemos dar entrada agora?`;
+      let msg = `*NOVA SOLICITACAO DE SALARIO-MATERNIDADE (URGENTE)*\n\n`;
+      msg += `*Nome:* ${nome}\n`;
+      msg += `*WhatsApp:* ${whatsapp}\n`;
+      msg += `*Previsao do Parto:* ${partoMes} (Prioridade)\n`;
+      msg += `*Situacao:* ${situacao}\n\n`;
+      msg += `*Mensagem:* Ola! Fiz a triagem no site da MaternidadePrev e quero garantir meu beneficio antes do nascimento do meu bebe. Como podemos dar entrada agora?`;
 
       const encodedMsg = encodeURIComponent(msg);
       const whatsappUrl = `https://api.whatsapp.com/send?phone=${rawPhone}&text=${encodedMsg}`;

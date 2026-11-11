@@ -12,8 +12,8 @@ const MATERNA_CONFIG = {
   // Mês seguinte (para opções do formulário)
   thirdMonth: "Janeiro",
 
-  // Número do WhatsApp que receberá os leads (apenas números com DDI 55 + DDD + Número)
-  whatsappNumber: "5511999999999", // <-- COLOQUE O NÚMERO DO SEU WHATSAPP AQUI
+  // Número do WhatsApp oficial que receberá os leads (Direito Materno: +55 38 9149-7475)
+  whatsappNumber: "553891497475",
 
   // Nome exibido da assessoria
   brandName: "MaternidadePrev",

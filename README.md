@@ -17,7 +17,7 @@ const MATERNA_CONFIG = {
   currentMonth: "Dezembro",  // Mês foco da urgência
   nextMonth: "Janeiro",      // Próximo mês
   thirdMonth: "Fevereiro",   // Terceiro mês
-  whatsappNumber: "5511999999999", // WhatsApp comercial
+  whatsappNumber: "553891497475", // WhatsApp comercial oficial Direito Materno
   metaPixelId: ""            // Pixel do Meta Ads
 };
 ```
