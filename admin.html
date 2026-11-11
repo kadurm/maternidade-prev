@@ -1099,15 +1099,24 @@
         if (!col) return;
 
         const isNovembro = (lead.partoMes || "").toLowerCase().includes("novembro");
+        const isDezembro = (lead.partoMes || "").toLowerCase().includes("dezembro");
+        const isUrgent = isNovembro || isDezembro;
         const card = document.createElement("div");
-        card.className = `lead-card bg-white p-3.5 rounded-2xl border shadow-sm space-y-2.5 ${isNovembro ? 'border-l-4 border-l-red-500 border-red-200' : 'border-slate-200'}`;
+        card.className = `lead-card bg-white p-3.5 rounded-2xl border shadow-sm space-y-2.5 ${isUrgent ? 'border-l-4 border-l-red-500 border-red-200' : 'border-slate-200'}`;
         card.setAttribute("draggable", "true");
         card.ondragstart = (e) => handleDragStart(e, lead.id);
+
+        let badgeMesHtml = `<span class="bg-slate-100 text-slate-700 text-[10px] font-bold px-1.5 py-0.5 rounded shrink-0">${lead.partoMes}</span>`;
+        if (isNovembro) {
+          badgeMesHtml = `<span class="bg-red-600 text-white text-[9px] font-black uppercase px-1.5 py-0.5 rounded tracking-wider shrink-0 animate-pulse">NOVEMBRO</span>`;
+        } else if (isDezembro) {
+          badgeMesHtml = `<span class="bg-amber-600 text-white text-[9px] font-black uppercase px-1.5 py-0.5 rounded tracking-wider shrink-0 animate-pulse">DEZEMBRO</span>`;
+        }
 
         card.innerHTML = `
           <div class="flex items-start justify-between gap-2">
             <span class="font-extrabold text-xs text-slate-900 leading-snug line-clamp-1">${lead.nome}</span>
-            ${isNovembro ? '<span class="bg-red-600 text-white text-[9px] font-black uppercase px-1.5 py-0.5 rounded tracking-wider shrink-0 animate-pulse">NOVEMBRO</span>' : `<span class="bg-slate-100 text-slate-700 text-[10px] font-bold px-1.5 py-0.5 rounded shrink-0">${lead.partoMes}</span>`}
+            ${badgeMesHtml}
           </div>
 
           <div class="text-[11px] text-slate-600 space-y-0.5">
@@ -1199,6 +1208,7 @@
       const msgs = lead.mensagens || [];
       const isCLT = (lead.situacao || "").toLowerCase().includes("carteira assinada");
       const isNov = (lead.partoMes || "").toLowerCase().includes("novembro");
+      const isDez = (lead.partoMes || "").toLowerCase().includes("dezembro");
 
       let badgeText = "Em Qualificação";
       let badgeClass = "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30";
@@ -1237,9 +1247,13 @@
             badgeText = "Aguardando Resposta da Cliente";
             badgeClass = "bg-amber-500/20 text-amber-300 border border-amber-500/30";
             ondeParou = `Atendente enviou a mensagem: "${lastMsg.texto.substring(0, 80)}...". Cliente ainda não visualizou/respondeu.`;
-            proximaAcao = isNov 
-              ? `Como o parto é em Novembro (urgência crítica), fazer follow-up com reforço de que o prazo de contribuição fecha no nascimento.` 
-              : `Aguardar até amanhã para fazer o segundo contato da régua de follow-up.`;
+            if (isNov) {
+              proximaAcao = `Como o parto é em Novembro (urgência imediata), fazer follow-up com reforço de que o prazo de contribuição fecha no nascimento.`;
+            } else if (isDez) {
+              proximaAcao = `Parto previsto para Dezembro: fazer follow-up alertando sobre o recesso de fim de ano do INSS e necessidade de dar entrada pré-parto.`;
+            } else {
+              proximaAcao = `Aguardar até amanhã para fazer o segundo contato da régua de follow-up.`;
+            }
           }
         }
       }
@@ -1408,10 +1422,14 @@
       document.getElementById("modalLeadSub").innerText = `WhatsApp: ${lead.whatsapp} • Situação: ${lead.situacao}`;
       
       const isNov = (lead.partoMes || "").toLowerCase().includes("novembro");
+      const isDez = (lead.partoMes || "").toLowerCase().includes("dezembro");
       const badge = document.getElementById("modalUrgencyBadge");
       if (isNov) {
         badge.className = "bg-red-600 text-white text-[10px] font-black uppercase px-2 py-0.5 rounded-full animate-pulse";
         badge.innerText = "🚨 Parto em Novembro (Urgência Máxima)";
+      } else if (isDez) {
+        badge.className = "bg-amber-600 text-white text-[10px] font-black uppercase px-2 py-0.5 rounded-full animate-pulse";
+        badge.innerText = "⚠️ Parto em Dezembro (Fim de Ano)";
       } else {
         badge.className = "bg-slate-200 text-slate-800 text-[10px] font-bold uppercase px-2 py-0.5 rounded-full";
         badge.innerText = `Parto em ${lead.partoMes}`;
@@ -1698,6 +1716,7 @@ Data: ${new Date().toLocaleDateString('pt-BR')}`;
         const tr = document.createElement("tr");
         tr.className = "hover:bg-slate-50 transition";
         const isNov = (lead.partoMes || "").toLowerCase().includes("novembro");
+        const isDez = (lead.partoMes || "").toLowerCase().includes("dezembro");
         const statusMap = {
           triagem: '1. Novos Leads',
           qualificacao: '2. Em Atendimento',
@@ -1707,11 +1726,15 @@ Data: ${new Date().toLocaleDateString('pt-BR')}`;
           perdido: '6. Não Qualificado (Preservado)'
         };
 
+        let mesBadgeClass = 'bg-slate-100 text-slate-700';
+        if (isNov) mesBadgeClass = 'bg-red-100 text-red-700 font-black';
+        else if (isDez) mesBadgeClass = 'bg-amber-100 text-amber-800 font-black';
+
         tr.innerHTML = `
           <td class="p-3 text-slate-500 text-[11px] whitespace-nowrap">${new Date(lead.data).toLocaleDateString('pt-BR')}</td>
           <td class="p-3 font-bold text-slate-900">${lead.nome}</td>
           <td class="p-3 text-slate-600 font-mono text-[11px]">${lead.whatsapp}</td>
-          <td class="p-3"><span class="px-2 py-0.5 rounded text-[10px] font-bold ${isNov ? 'bg-red-100 text-red-700 font-black' : 'bg-slate-100 text-slate-700'}">${lead.partoMes}</span></td>
+          <td class="p-3"><span class="px-2 py-0.5 rounded text-[10px] font-bold ${mesBadgeClass}">${lead.partoMes}</span></td>
           <td class="p-3 text-[11px] text-slate-600 truncate max-w-[140px]">${lead.situacao}</td>
           <td class="p-3"><span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-slate-100 text-slate-800">${statusMap[lead.status] || lead.status}</span></td>
           <td class="p-3 text-[11px] text-slate-500 max-w-[200px] truncate">${lead.aiDiagnosis?.ondeParou || 'Aguardando 1º contato'}</td>
