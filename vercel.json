@@ -6,5 +6,11 @@
     { "source": "/admin", "destination": "/admin.html" },
     { "source": "/dashboard", "destination": "/admin.html" },
     { "source": "/crm", "destination": "/admin.html" }
+  ],
+  "crons": [
+    {
+      "path": "/api/keep-alive",
+      "schedule": "0 10 * * *"
+    }
   ]
 }

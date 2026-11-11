@@ -1,0 +1,27 @@
+name: Supabase Keep-Alive Heartbeat
+
+on:
+  schedule:
+    # Executa a cada 2 dias às 08:00 UTC (05:00 Horário de Brasília)
+    - cron: '0 8 */2 * *'
+  workflow_dispatch: # Permite disparar manualmente pelo GitHub
+
+jobs:
+  ping-supabase:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Supabase Database via REST API
+        run: |
+          echo "Disparando Keep-Alive para o Supabase MaternidadePrev..."
+          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+            -H "apikey: sb_publishable_grMQWI-9sz0sSkQfINM81Q_s-JCq_Zz" \
+            -H "Authorization: Bearer sb_publishable_grMQWI-9sz0sSkQfINM81Q_s-JCq_Zz" \
+            "https://edutujipdgzrqvjloguk.supabase.co/rest/v1/leads?select=id&limit=1")
+          
+          echo "Status de Resposta: $HTTP_STATUS"
+          if [ "$HTTP_STATUS" -eq 200 ]; then
+            echo "✅ Supabase está online e a inatividade foi zerada com sucesso!"
+          else
+            echo "⚠️ Resposta inesperada: $HTTP_STATUS"
+            exit 1
+          fi
