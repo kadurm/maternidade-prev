@@ -381,13 +381,18 @@
           <div class="flex items-center gap-2">
             <label class="text-xs font-bold text-slate-600">Filtrar por Parto:</label>
             <select id="monthFilter" onchange="filterLeads()" class="bg-white border border-slate-300 text-slate-800 text-xs rounded-xl p-2 font-semibold focus:ring-2 focus:ring-brand-600">
-              <option value="todos">Todos os Meses</option>
-              <option value="Novembro" selected>Novembro (Reta Final)</option>
+              <option value="todos" selected>Todos os Meses</option>
+              <option value="Novembro">Novembro (Reta Final)</option>
               <option value="Dezembro">Dezembro</option>
               <option value="Janeiro">Janeiro ou Depois</option>
               <option value="JaNasceu">Bebê já nasceu</option>
             </select>
           </div>
+
+          <button onclick="loadLeadsFromSupabase(true)" title="Sincronizar leads do Supabase em tempo real" class="bg-white hover:bg-slate-50 text-slate-700 font-bold text-xs py-2 px-3 rounded-xl border border-slate-300 shadow-sm flex items-center gap-1.5 transition">
+            <span class="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span id="btnSyncText">🔄 Sincronizar Nuvem</span>
+          </button>
 
           <button onclick="openNewLeadModal()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs py-2 px-3 rounded-xl shadow flex items-center gap-1.5 transition">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path></svg>
@@ -971,10 +976,16 @@
       renderKanban();
       updateDashboardMetrics();
       loadLeadsFromSupabase();
+      if (!window._supabaseSyncInterval) {
+        window._supabaseSyncInterval = setInterval(() => loadLeadsFromSupabase(), 8000);
+      }
     }
 
-    async function loadLeadsFromSupabase() {
+    async function loadLeadsFromSupabase(isManual = false) {
       if (typeof MATERNA_CONFIG === 'undefined' || !MATERNA_CONFIG.supabaseUrl) return;
+      const btnSync = document.getElementById("btnSyncText");
+      if (isManual && btnSync) btnSync.innerText = "Buscando...";
+
       try {
         const res = await fetch(`${MATERNA_CONFIG.supabaseUrl}/rest/v1/leads?order=created_at.desc`, {
           headers: {
@@ -1010,9 +1021,14 @@
               renderAuditTable();
             }
           }
+          if (isManual && btnSync) {
+            btnSync.innerText = "Atualizado ✓";
+            setTimeout(() => { btnSync.innerText = "🔄 Sincronizar Nuvem"; }, 1500);
+          }
         }
       } catch(e) {
         console.warn('Supabase offline ou tabela pendente:', e);
+        if (isManual && btnSync) btnSync.innerText = "🔄 Sincronizar Nuvem";
       }
     }
 
