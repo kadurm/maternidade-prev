@@ -562,6 +562,9 @@
           <button onclick="openEditLeadModal(selectedLeadId)" class="bg-brand-800 hover:bg-brand-700 text-emerald-200 border border-brand-700 text-xs font-bold py-1.5 px-3 rounded-xl transition flex items-center gap-1">
             <span>✏️ Editar Card</span>
           </button>
+          <button onclick="deleteLead(selectedLeadId)" class="bg-red-800/80 hover:bg-red-700 text-red-200 border border-red-700 text-xs font-bold py-1.5 px-3 rounded-xl transition flex items-center gap-1">
+            <span>🗑️ Excluir</span>
+          </button>
           <button onclick="closeLeadModal()" class="w-8 h-8 rounded-full bg-brand-800 hover:bg-brand-700 text-white flex items-center justify-center font-bold text-lg transition">
             ✕
           </button>
@@ -804,9 +807,14 @@
           </select>
         </div>
 
-        <div class="pt-2 flex justify-end gap-2">
-          <button type="button" onclick="closeEditLeadModal()" class="px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-xl">Cancelar</button>
-          <button type="submit" class="px-5 py-2.5 text-xs font-extrabold bg-brand-700 hover:bg-brand-800 text-white rounded-xl shadow">Salvar Alterações</button>
+        <div class="pt-2 flex items-center justify-between">
+          <button type="button" onclick="deleteLead(document.getElementById('editLeadId').value)" class="px-3 py-2 text-xs font-bold text-red-600 hover:bg-red-50 rounded-xl flex items-center gap-1 transition">
+            <span>🗑️ Excluir Lead</span>
+          </button>
+          <div class="flex gap-2">
+            <button type="button" onclick="closeEditLeadModal()" class="px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-xl">Cancelar</button>
+            <button type="submit" class="px-5 py-2.5 text-xs font-extrabold bg-brand-700 hover:bg-brand-800 text-white rounded-xl shadow">Salvar Alterações</button>
+          </div>
         </div>
       </form>
     </div>
@@ -981,6 +989,14 @@
       }
     }
 
+    function isTestLead(lead) {
+      if (!lead) return true;
+      if (lead.status === 'excluido') return true;
+      const n = (lead.nome || "").toLowerCase().trim();
+      const w = (lead.whatsapp || "").replace(/\D/g, "");
+      return n.includes("carlos edurado") || n.includes("carlos eduardo") || w.includes("999999999") || (lead.id && lead.id.includes("test"));
+    }
+
     async function loadLeadsFromSupabase(isManual = false) {
       if (typeof MATERNA_CONFIG === 'undefined' || !MATERNA_CONFIG.supabaseUrl) return;
       const btnSync = document.getElementById("btnSyncText");
@@ -995,11 +1011,11 @@
         });
         if (res.ok) {
           const cloudLeads = await res.json();
-          if (Array.isArray(cloudLeads) && cloudLeads.length > 0) {
-            const map = new Map();
-            currentLeads.forEach(l => map.set(l.id, l));
+          if (Array.isArray(cloudLeads)) {
+            const validLeads = [];
             cloudLeads.forEach(cl => {
-              const formatted = {
+              if (isTestLead(cl)) return;
+              validLeads.push({
                 id: cl.id,
                 data: cl.created_at,
                 nome: cl.nome,
@@ -1010,10 +1026,10 @@
                 prioridade: cl.prioridade || 'alta',
                 canal: cl.canal || 'Landing Page',
                 ...(cl.dados || {})
-              };
-              map.set(cl.id, formatted);
+              });
             });
-            currentLeads = Array.from(map.values()).sort((a,b) => new Date(b.data) - new Date(a.data));
+
+            currentLeads = validLeads.sort((a,b) => new Date(b.data) - new Date(a.data));
             localStorage.setItem("materna_leads", JSON.stringify(currentLeads));
             renderKanban();
             updateDashboardMetrics();
@@ -1029,6 +1045,28 @@
       } catch(e) {
         console.warn('Supabase offline ou tabela pendente:', e);
         if (isManual && btnSync) btnSync.innerText = "🔄 Sincronizar Nuvem";
+      }
+    }
+
+    async function deleteLead(leadId) {
+      if (!leadId) return;
+      if (!confirm("Tem certeza que deseja excluir este cadastro?")) return;
+
+      const lead = currentLeads.find(l => l.id === leadId);
+      if (lead) {
+        lead.status = 'excluido';
+        syncLeadToSupabase(lead);
+      }
+
+      currentLeads = currentLeads.filter(l => l.id !== leadId);
+      localStorage.setItem("materna_leads", JSON.stringify(currentLeads));
+
+      closeLeadModal();
+      closeEditLeadModal();
+      renderKanban();
+      updateDashboardMetrics();
+      if (!document.getElementById("view_auditoria").classList.contains("hidden")) {
+        renderAuditTable();
       }
     }
 
@@ -1064,7 +1102,11 @@
     function loadLeadsFromStorage() {
       const stored = localStorage.getItem("materna_leads");
       if (stored) {
-        try { currentLeads = JSON.parse(stored); } catch(e) { currentLeads = []; }
+        try { 
+          currentLeads = JSON.parse(stored).filter(l => !isTestLead(l)); 
+        } catch(e) { 
+          currentLeads = []; 
+        }
       } else {
         currentLeads = [];
       }
@@ -1220,9 +1262,14 @@
           </div>
 
           <div class="pt-1.5 border-t border-slate-100 flex items-center justify-between text-[11px]">
-            <button onclick="event.stopPropagation(); openEditLeadModal('${lead.id}')" class="text-[10px] text-slate-500 hover:text-slate-900 font-bold flex items-center gap-1">
-              <span>✏️ Editar</span>
-            </button>
+            <div class="flex items-center gap-2">
+              <button onclick="event.stopPropagation(); openEditLeadModal('${lead.id}')" class="text-[10px] text-slate-500 hover:text-slate-900 font-bold flex items-center gap-1">
+                <span>✏️ Editar</span>
+              </button>
+              <button onclick="event.stopPropagation(); deleteLead('${lead.id}')" class="text-[10px] text-red-400 hover:text-red-700 font-bold" title="Excluir Lead">
+                <span>🗑️</span>
+              </button>
+            </div>
             <button onclick="openLeadModal('${lead.id}')" class="text-[10px] text-brand-700 font-black hover:underline flex items-center gap-0.5">
               <span>Atender →</span>
             </button>

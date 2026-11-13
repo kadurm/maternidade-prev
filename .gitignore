@@ -3,3 +3,17 @@
 Thumbs.db
 
 .vercel
+
+# Variáveis de ambiente e credenciais (blindagem DevOps)
+node_modules
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+*.p12
+*.pfx
+firebase-key.json
+*serviceAccount*.json
+credentials*.json
+client_secret*.json
