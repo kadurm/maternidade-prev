@@ -1103,7 +1103,8 @@
               timeline: lead.timeline,
               mensagens: lead.mensagens,
               notasFixas: lead.notasFixas,
-              aiDiagnosis: lead.aiDiagnosis
+              aiDiagnosis: lead.aiDiagnosis,
+              origem: lead.origem
             }
           })
         }).catch(() => {});
@@ -1222,6 +1223,10 @@
     // ==========================================
     // RENDERIZAR KANBAN DO CRM
     // ==========================================
+    function escapeHtml(s) {
+      return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    }
+
     function renderKanban() {
       const stages = ['triagem', 'qualificacao', 'documentos', 'advogado', 'aprovado', 'perdido'];
       stages.forEach(st => {
@@ -1281,6 +1286,9 @@
             </div>
             <div class="truncate text-[10px] text-slate-500">
               💼 ${lead.situacao}
+            </div>
+            <div class="truncate text-[10px] text-slate-400" title="${escapeHtml(lead.canal)}">
+              📍 ${escapeHtml(lead.canal || 'Origem desconhecida')}
             </div>
           </div>
 

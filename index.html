@@ -67,6 +67,7 @@
 
   <!-- Script de Configuração Modular -->
   <script src="config.js"></script>
+  <script src="origem.js"></script>
 
   <!-- Meta Pixel Code Oficial -->
   <script>
@@ -567,6 +568,9 @@
       const fbc = typeof getCookie === 'function' ? getCookie('_fbc') : null;
       const fbclid = typeof getFbclid === 'function' ? getFbclid() : null;
       const currentUrl = window.location.href;
+      const origem = typeof getMaternaOrigem === 'function'
+        ? getMaternaOrigem()
+        : { canal: 'Landing Page (origem não capturada)' };
 
       // 1. Disparar eventos no Navegador (Meta Pixel)
       if (typeof fbq === 'function') {
@@ -590,6 +594,7 @@
       try {
         fetch('/api/meta-capi', {
           method: 'POST',
+          keepalive: true,
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             event_name: 'Lead',
@@ -638,7 +643,8 @@
         situacao,
         status: 'triagem', // triagem, qualificacao, documentos, advogado, aprovado, perdido
         prioridade: isUrgent ? 'critica' : 'alta',
-        canal: 'Landing Page (Meta Ads)',
+        canal: origem.canal,
+        origem: origem,
         contrato: {
           valorBeneficio: 5772.00, // 4 parcelas líquidas de R$ 1.443,00
           percentual: 30,
@@ -665,6 +671,7 @@
         if (typeof MATERNA_CONFIG !== 'undefined' && MATERNA_CONFIG.supabaseUrl && MATERNA_CONFIG.supabaseKey) {
           fetch(`${MATERNA_CONFIG.supabaseUrl}/rest/v1/leads`, {
             method: 'POST',
+            keepalive: true,
             headers: {
               'apikey': MATERNA_CONFIG.supabaseKey,
               'Authorization': 'Bearer ' + MATERNA_CONFIG.supabaseKey,
@@ -679,10 +686,11 @@
               situacao: newLead.situacao,
               status: 'triagem',
               prioridade: newLead.prioridade,
-              canal: 'Landing Page (Meta Ads)',
+              canal: origem.canal,
               dados: {
                 contrato: newLead.contrato,
-                timeline: newLead.timeline
+                timeline: newLead.timeline,
+                origem: origem
               }
             })
           }).catch(() => {});
