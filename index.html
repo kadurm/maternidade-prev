@@ -573,7 +573,7 @@
         fbq('track', 'Lead', {
           content_name: 'Salario_Maternidade_Lead',
           currency: 'BRL',
-          value: 1945.20,
+          value: 1731.00,
           month_priority: partoMes,
           status_job: situacao
         }, { eventID: eventId });
@@ -581,7 +581,7 @@
         fbq('track', 'CompleteRegistration', {
           content_name: 'Inscricao_Triagem',
           currency: 'BRL',
-          value: 1945.20,
+          value: 1731.00,
           status: true
         }, { eventID: eventId + '_reg' });
       }
@@ -602,7 +602,7 @@
             fbclid: fbclid,
             custom_data: {
               currency: 'BRL',
-              value: 1945.20,
+              value: 1731.00,
               month_priority: partoMes,
               status_job: situacao
             }
@@ -640,9 +640,11 @@
         prioridade: isUrgent ? 'critica' : 'alta',
         canal: 'Landing Page (Meta Ads)',
         contrato: {
-          valorBeneficio: 6484.00, // 4 parcelas de R$ 1.621,00
+          valorBeneficio: 5772.00, // 4 parcelas líquidas de R$ 1.443,00
           percentual: 30,
-          valorComissao: 1945.20, // 30% de comissão no êxito
+          valorComissao: 1731.00, // 30% de comissão no êxito
+          custoGuia: 178.00,
+          valorTotalCliente: 1909.00,
           status: 'pendente'
         },
         timeline: [

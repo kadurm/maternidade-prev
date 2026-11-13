@@ -100,7 +100,7 @@ module.exports = async (req, res) => {
     if (event_name === 'Lead') {
       finalCustomData = {
         currency: "BRL",
-        value: 1945.20,
+        value: 1731.00,
         content_name: "Salario_Maternidade_Lead",
         ...finalCustomData
       };

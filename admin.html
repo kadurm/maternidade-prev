@@ -201,7 +201,7 @@
             <span class="text-lg">💰</span>
           </div>
           <div class="text-2xl font-black text-slate-900" id="dashFaturamentoTotal">R$ 0</div>
-          <span class="text-[10px] text-slate-500 mt-1 block">R$ 1.945,20 por contrato deferido</span>
+          <span class="text-[10px] text-slate-500 mt-1 block">R$ 1.731,00 por contrato deferido</span>
         </div>
 
         <div class="bg-blue-50/80 p-4 rounded-2xl shadow-sm border-2 border-blue-300">
@@ -219,7 +219,7 @@
             <span class="text-xs bg-purple-200 text-purple-900 font-bold px-1.5 py-0.5 rounded">Nathália</span>
           </div>
           <div class="text-2xl font-black text-purple-950" id="dashReembolsoGuiaTotal">R$ 0</div>
-          <span class="text-[10px] text-purple-700 font-medium mt-1 block">R$ 178,90 / guia avulsa adiantada</span>
+          <span class="text-[10px] text-purple-700 font-medium mt-1 block">R$ 178,00 / guia avulsa adiantada</span>
         </div>
 
         <div class="bg-emerald-50 p-4 rounded-2xl shadow-sm border-2 border-emerald-400">
@@ -245,8 +245,8 @@
 
           <div class="space-y-2 text-xs font-semibold">
             <div class="flex justify-between py-1.5 border-b border-slate-100">
-              <span class="text-slate-600">(+) Valor Médio de Benefício Liberado por Caso</span>
-              <span class="font-black text-slate-900">R$ 6.484,00</span>
+              <span class="text-slate-600">(+) Benefício Líquido Médio por Caso (4x R$ 1.443)</span>
+              <span class="font-black text-slate-900">R$ 5.772,00</span>
             </div>
             <div class="flex justify-between py-1.5 border-b border-slate-100 bg-emerald-50/50 px-2 rounded-lg">
               <span class="text-emerald-900 font-black">(+) Receita Bruta de Honorários da Carteira (30%)</span>
@@ -694,23 +694,23 @@
         <div id="tabContent_contrato" class="space-y-4 hidden">
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div class="bg-slate-50 p-3.5 rounded-2xl border border-slate-200">
-              <label class="block text-xs font-bold text-slate-700 mb-1">Valor Benefício (R$):</label>
-              <input type="number" id="contractBenefitValue" value="6484.00" oninput="calculateCommission()" class="w-full bg-white border border-slate-300 rounded-xl p-2 text-xs font-black focus:ring-2 focus:ring-brand-600">
-              <span class="text-[10px] text-slate-500 mt-1 block">4 parcelas de R$ 1.621</span>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Benefício Líquido (R$):</label>
+              <input type="number" id="contractBenefitValue" value="5772.00" oninput="calculateCommission()" class="w-full bg-white border border-slate-300 rounded-xl p-2 text-xs font-black focus:ring-2 focus:ring-brand-600">
+              <span class="text-[10px] text-slate-500 mt-1 block">4 parcelas líquidas de R$ 1.443</span>
             </div>
 
             <div class="bg-slate-50 p-3.5 rounded-2xl border border-slate-200">
               <label class="block text-xs font-bold text-slate-700 mb-1">% Honorários:</label>
               <input type="number" id="contractCommissionPct" value="30" oninput="calculateCommission()" class="w-full bg-white border border-slate-300 rounded-xl p-2 text-xs font-black focus:ring-2 focus:ring-brand-600">
-              <span class="text-[10px] text-slate-500 mt-1 block">R$ 1.945,20 por contrato</span>
+              <span class="text-[10px] text-slate-500 mt-1 block">30% sobre o valor líquido recebido</span>
             </div>
 
             <div class="bg-emerald-50 p-3.5 rounded-2xl border-2 border-emerald-300">
-              <label class="block text-xs font-black text-emerald-900 mb-1">Honorários Brutos:</label>
+              <label class="block text-xs font-black text-emerald-900 mb-1">Honorários + Guia:</label>
               <div id="contractCommissionValue" class="text-base font-black text-emerald-700 pt-1">
-                R$ 1.945,20
+                R$ 1.731,00
               </div>
-              <span class="text-[10px] text-emerald-800 font-semibold mt-0.5 block">+ R$ 178,90 (guia INSS)</span>
+              <span class="text-[10px] text-emerald-800 font-semibold mt-0.5 block" id="contractTotalCliente">+ R$ 178,00 (guia) = Total: R$ 1.909,00</span>
             </div>
           </div>
 
@@ -1015,7 +1015,7 @@
             const validLeads = [];
             cloudLeads.forEach(cl => {
               if (isTestLead(cl)) return;
-              validLeads.push({
+              const leadObj = {
                 id: cl.id,
                 data: cl.created_at,
                 nome: cl.nome,
@@ -1026,7 +1026,18 @@
                 prioridade: cl.prioridade || 'alta',
                 canal: cl.canal || 'Landing Page',
                 ...(cl.dados || {})
-              });
+              };
+              if (!leadObj.contrato || leadObj.contrato.valorBeneficio === 6484) {
+                leadObj.contrato = {
+                  valorBeneficio: 5772.00,
+                  percentual: 30,
+                  valorComissao: 1731.00,
+                  custoGuia: 178.00,
+                  valorTotalCliente: 1909.00,
+                  status: leadObj.contrato?.status || 'pendente'
+                };
+              }
+              validLeads.push(leadObj);
             });
 
             currentLeads = validLeads.sort((a,b) => new Date(b.data) - new Date(a.data));
@@ -1103,7 +1114,19 @@
       const stored = localStorage.getItem("materna_leads");
       if (stored) {
         try { 
-          currentLeads = JSON.parse(stored).filter(l => !isTestLead(l)); 
+          currentLeads = JSON.parse(stored).filter(l => !isTestLead(l));
+          currentLeads.forEach(l => {
+            if (!l.contrato || l.contrato.valorBeneficio === 6484) {
+              l.contrato = {
+                valorBeneficio: 5772.00,
+                percentual: 30,
+                valorComissao: 1731.00,
+                custoGuia: 178.00,
+                valorTotalCliente: 1909.00,
+                status: l.contrato?.status || 'pendente'
+              };
+            }
+          });
         } catch(e) { 
           currentLeads = []; 
         }
@@ -1583,7 +1606,7 @@
       renderChatMessages(lead);
       runAIDiagnosis();
 
-      document.getElementById("contractBenefitValue").value = lead.contrato?.valorBeneficio || 6484.00;
+      document.getElementById("contractBenefitValue").value = lead.contrato?.valorBeneficio || 5772.00;
       document.getElementById("contractCommissionPct").value = lead.contrato?.percentual || 30;
       calculateCommission();
       updateContractButtons(lead.contrato?.status || 'pendente');
@@ -1624,16 +1647,16 @@
 
       if (type === 'apresentacao') {
         if (isCLT) {
-          text = `Olá ${primeiroNome}, tudo bem? Aqui é da assessoria especializada MaternidadePrev! 🌸\n\nRecebi seu cadastro e vi que você trabalha com carteira assinada (CLT) e vai ter seu bebê no mês de *${mes}*!\n\n💡 Você sabia que além da licença que a sua empresa paga, a lei assegura à gestante um *SEGUNDO Salário-Maternidade de 4x de R$ 1.621,00 (Total de R$ 6.484,00)* pago diretamente pelo INSS por atividade concomitante?\n\n⚠️ O detalhe crucial: para ter direito a esse valor extra, a inscrição e a contribuição avulsa precisam ser feitas *ANTES do bebê nascer* (nós cuidamos de tudo isso para você).\n\nPodemos fazer sua análise para você não perder essa janela de prazo?`;
+          text = `Olá ${primeiroNome}, tudo bem? Aqui é da assessoria especializada MaternidadePrev! 🌸\n\nRecebi seu cadastro e vi que você trabalha com carteira assinada (CLT) e vai ter seu bebê no mês de *${mes}*!\n\n💡 Você sabia que além da licença que a sua empresa paga, a lei assegura à gestante um *SEGUNDO Salário-Maternidade de 4x de R$ 1.443,00 líquido (Total de R$ 5.772,00 líquido)* pago diretamente pelo INSS por atividade concomitante?\n\n⚠️ O detalhe crucial: para ter direito a esse valor extra, a inscrição e a contribuição avulsa precisam ser feitas *ANTES do bebê nascer* (nós cuidamos de tudo isso para você).\n\nPodemos fazer sua análise para você não perder essa janela de prazo?`;
         } else {
-          text = `Olá ${primeiroNome}, tudo bem? Aqui é da assessoria especializada MaternidadePrev! 🌸\n\nRecebi seu cadastro e vi que seu bebê está previsto para nascer no mês de *${mes}*.\n\nO INSS paga *4 parcelas de R$ 1.621,00 (Total de R$ 6.484,00)* para gestantes. Como você está na reta final, precisamos agir com antecedência para que você receba o benefício logo nos primeiros dias do nascimento.\n\nVocê já trabalhou de carteira assinada antes da gestação ou fez alguma contribuição ao INSS?`;
+          text = `Olá ${primeiroNome}, tudo bem? Aqui é da assessoria especializada MaternidadePrev! 🌸\n\nRecebi seu cadastro e vi que seu bebê está previsto para nascer no mês de *${mes}*.\n\nO INSS paga *4 parcelas líquidas de R$ 1.443,00 (Total de R$ 5.772,00)* para gestantes. Como você está na reta final, precisamos agir com antecedência para que você receba o benefício logo nos primeiros dias do nascimento.\n\nVocê já trabalhou de carteira assinada antes da gestação ou fez alguma contribuição ao INSS?`;
         }
       } else if (type === 'documentos') {
         text = `Olá ${primeiroNome}! Para o nosso advogado parceiro dar entrada no seu processo e emitir a contribuição necessária sem você pagar nada adiantado, precisamos apenas das fotos de:\n\n1️⃣ Documento de Identidade (RG/CPF ou CNH);\n2️⃣ Atestado médico de pré-natal com indicação de semanas de gestação;\n3️⃣ Carteira de Trabalho (CTPS - páginas com foto e contratos).\n\nPode enviar as fotos por aqui para adiantarmos a análise?`;
       } else if (type === 'followup') {
-        text = `Oi ${primeiroNome}, tudo bem? Passando para te avisar que para garantir o direito ao Salário-Maternidade de *R$ 6.484,00* sem travas, a contribuição e o processo *precisam ser abertos antes do parto*.\n\nComo o seu bebê está previsto para *${mes}*, o prazo está se encerrando. Conseguiu separar os documentos para não perder essa renda?`;
+        text = `Oi ${primeiroNome}, tudo bem? Passando para te avisar que para garantir o direito ao Salário-Maternidade de *R$ 5.772,00 líquido* sem travas, a contribuição e o processo *precisam ser abertos antes do parto*.\n\nComo o seu bebê está previsto para *${mes}*, o prazo está se encerrando. Conseguiu separar os documentos para não perder essa renda?`;
       } else if (type === 'advogado_contrato') {
-        text = `Excelente notícia, ${primeiroNome}! 🎉\n\nSeu cadastro foi validado com sucesso e enquadrado para o benefício de *R$ 6.484,00*. O advogado especialista parceiro já está pronto para protocolar.\n\nPara sua total segurança, o nosso Termo de Assessoria formaliza que nossa comissão de 30% *só é devida após o dinheiro cair na sua conta bancária*. Se você não receber, você não paga nada.\n\nPosso enviar o link para você assinar digitalmente pelo WhatsApp agora?`;
+        text = `Excelente notícia, ${primeiroNome}! 🎉\n\nSeu cadastro foi validado com sucesso e enquadrado para o benefício de *R$ 5.772,00 líquido*. O advogado especialista parceiro já está pronto para protocolar.\n\nPara sua total segurança, o nosso Termo de Assessoria formaliza que nossa comissão de 30% *só é devida após o dinheiro cair na sua conta bancária*. Se você não receber, você não paga nada.\n\nPosso enviar o link para você assinar digitalmente pelo WhatsApp agora?`;
       }
 
       document.getElementById("modalChatText").value = text;
@@ -1662,7 +1685,11 @@
       const benef = parseFloat(document.getElementById("contractBenefitValue").value) || 0;
       const pct = parseFloat(document.getElementById("contractCommissionPct").value) || 0;
       const honorarios = (benef * pct) / 100;
+      const totalCliente = honorarios + 178.00;
       document.getElementById("contractCommissionValue").innerText = "R$ " + honorarios.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+      if (document.getElementById("contractTotalCliente")) {
+        document.getElementById("contractTotalCliente").innerText = `+ R$ 178,00 (guia) = Total: R$ ${totalCliente.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+      }
 
       const lead = currentLeads.find(l => l.id === selectedLeadId);
       if (lead) {
@@ -1670,6 +1697,8 @@
         lead.contrato.valorBeneficio = benef;
         lead.contrato.percentual = pct;
         lead.contrato.valorComissao = honorarios;
+        lead.contrato.custoGuia = 178.00;
+        lead.contrato.valorTotalCliente = totalCliente;
         generateContractDraft(lead);
         saveLeadsToStorage();
         syncLeadToSupabase(lead);
@@ -1717,6 +1746,11 @@
     }
 
     function generateContractDraft(lead) {
+      const valorBeneficio = lead.contrato?.valorBeneficio || 5772.00;
+      const valorComissao = lead.contrato?.valorComissao || 1731.00;
+      const custoGuia = lead.contrato?.custoGuia || 178.00;
+      const totalCliente = valorComissao + custoGuia;
+
       const draft = `TERMO DE PRESTAÇÃO DE ASSESSORIA ADMINISTRATIVA E INTERMEDIAÇÃO DE BENEFÍCIO PREVIDENCIÁRIO
 
 CONTRATANTE: ${lead.nome}
@@ -1725,13 +1759,15 @@ SITUAÇÃO DECLARADA: ${lead.situacao}
 PREVISÃO DE PARTO: ${lead.partoMes}
 
 CONTRATADA: MaternidadePrev - Assessoria em Direito Materno
-ADVOGADO PARCEIRO CORRESPONDENTE: Departamento Jurídico Credenciado
+ADVOGADO PARCEIRO CORRESPONDENTE: Departamento Jurídico Credenciado (Dra. Nathália)
 
 OBJETO: Assessoria na montagem, conferência documental e encaminhamento administrativo de requerimento de SALÁRIO-MATERNIDADE junto ao INSS.
 
-HONORÁRIOS DE ÊXITO: Fica ajustado o percentual de ${lead.contrato?.percentual || 30}% (trinta por cento) sobre o montante bruto auferido a título de benefício (estimado em 4 parcelas de R$ 1.621,00, totalizando R$ ${(lead.contrato?.valorBeneficio || 6484).toFixed(2)}), condicionado ESTRITAMENTE ao êxito e efetiva disponibilização do pagamento à CONTRATANTE.
+BENEFÍCIO PREVIDENCIÁRIO: 4 (quatro) parcelas mensais com valor líquido de R$ 1.443,00 cada (após dedução legal na fonte de R$ 178,00 por parcela referente à cota previdenciária), totalizando o benefício líquido auferido de R$ ${valorBeneficio.toFixed(2)}.
 
-Em caso de indeferimento sem recebimento, NENHUM valor será devido pela CONTRATANTE.
+HONORÁRIOS DE ÊXITO: Fica ajustado o percentual de ${lead.contrato?.percentual || 30}% (trinta por cento) calculado ESTRITAMENTE sobre o valor LÍQUIDO auferido a título de benefício (correspondente a R$ ${valorComissao.toFixed(2)}), somado ao reembolso do adiantamento da guia de contribuição previdenciária avulsa no valor de R$ ${custoGuia.toFixed(2)}, totalizando o montante de R$ ${totalCliente.toFixed(2)}.
+
+CONDIÇÃO DE SUCESSO: O pagamento é condicionado ESTRITAMENTE ao êxito e efetiva disponibilização do benefício na conta bancária da CONTRATANTE. Em caso de indeferimento sem recebimento, NENHUM valor será devido pela CONTRATANTE.
 
 Data: ${new Date().toLocaleDateString('pt-BR')}`;
 
@@ -1818,7 +1854,7 @@ Data: ${new Date().toLocaleDateString('pt-BR')}`;
         status: 'triagem',
         prioridade: isNov ? 'critica' : 'alta',
         canal: 'Cadastro Manual no CRM',
-        contrato: { valorBeneficio: 6484.00, percentual: 30, valorComissao: 1945.20, status: 'pendente' },
+        contrato: { valorBeneficio: 5772.00, percentual: 30, valorComissao: 1731.00, custoGuia: 178.00, valorTotalCliente: 1909.00, status: 'pendente' },
         mensagens: [],
         timeline: [{ data: new Date().toISOString(), autor: "Kadu", texto: `Lead manual cadastrado.` }]
       };
@@ -1892,12 +1928,12 @@ Data: ${new Date().toLocaleDateString('pt-BR')}`;
 
     // Atualização Geral de Métricas e DRE com Dados 100% Reais
     function updateDashboardMetrics() {
-      const validLeads = currentLeads.filter(l => l.status !== 'perdido');
+      const validLeads = currentLeads.filter(l => l.status !== 'perdido' && l.status !== 'excluido');
       const count = validLeads.length;
 
-      const faturamentoTotal = count * 1945.20;
+      const faturamentoTotal = count * 1731.00;
       const reembolsoMidiaReal = auditData.valor || 0;
-      const reembolsoGuiaTotal = count * 178.90;
+      const reembolsoGuiaTotal = count * 178.00;
       const lucroLiquidoTotal = Math.max(0, faturamentoTotal - reembolsoMidiaReal);
 
       if (document.getElementById("lblValorAuditadoTop")) {
@@ -1968,7 +2004,7 @@ Data: ${new Date().toLocaleDateString('pt-BR')}`;
           status: "triagem",
           prioridade: "critica",
           canal: "Instagram Ads (Criativo Novembro)",
-          contrato: { valorBeneficio: 6484.00, percentual: 30, valorComissao: 1945.20, status: "pendente" },
+          contrato: { valorBeneficio: 5772.00, percentual: 30, valorComissao: 1731.00, custoGuia: 178.00, valorTotalCliente: 1909.00, status: "pendente" },
           notasFixas: "Gestante no 8º mês. Trabalha como operadora de caixa CLT. Interessada no 2º salário.",
           mensagens: [
             { data: new Date(Date.now() - 1000 * 60 * 10).toISOString(), autor: "Atendente CRM", texto: "Olá Juliana! Vi que você trabalha CLT e seu bebê nasce em Novembro. Sabia do 2º salário maternidade?" },
@@ -1986,7 +2022,7 @@ Data: ${new Date().toLocaleDateString('pt-BR')}`;
           status: "qualificacao",
           prioridade: "critica",
           canal: "Instagram Ads",
-          contrato: { valorBeneficio: 6484.00, percentual: 30, valorComissao: 1945.20, status: "pendente" },
+          contrato: { valorBeneficio: 5772.00, percentual: 30, valorComissao: 1731.00, custoGuia: 178.00, valorTotalCliente: 1909.00, status: "pendente" },
           notasFixas: "Enviou foto da CTPS. Falta o atestado médico com o carimbo do CRM.",
           mensagens: [
             { data: new Date(Date.now() - 1000 * 60 * 120).toISOString(), autor: "Atendente CRM", texto: "Camila, para dar entrada precisamos do atestado pré-natal de 28+ semanas." },
@@ -2004,7 +2040,7 @@ Data: ${new Date().toLocaleDateString('pt-BR')}`;
           status: "documentos",
           prioridade: "alta",
           canal: "Landing Page",
-          contrato: { valorBeneficio: 6484.00, percentual: 30, valorComissao: 1945.20, status: "enviado" },
+          contrato: { valorBeneficio: 5772.00, percentual: 30, valorComissao: 1731.00, custoGuia: 178.00, valorTotalCliente: 1909.00, status: "enviado" },
           notasFixas: "Desempregada há 8 meses. Está no período de graça do INSS.",
           mensagens: [
             { data: new Date(Date.now() - 1000 * 60 * 500).toISOString(), autor: "Atendente CRM", texto: "Beatriz, documentação prévia conferida! Estamos gerando o termo de assessoria." }
@@ -2021,7 +2057,7 @@ Data: ${new Date().toLocaleDateString('pt-BR')}`;
           status: "advogado",
           prioridade: "critica",
           canal: "Instagram Ads",
-          contrato: { valorBeneficio: 6484.00, percentual: 30, valorComissao: 1945.20, status: "assinado" },
+          contrato: { valorBeneficio: 5772.00, percentual: 30, valorComissao: 1731.00, custoGuia: 178.00, valorTotalCliente: 1909.00, status: "assinado" },
           notasFixas: "Contrato assinado no ZapSign. Nathália já realizou o protocolo no INSS sob urgência pré-parto.",
           mensagens: [
             { data: new Date(Date.now() - 1000 * 60 * 1000).toISOString(), autor: "Atendente CRM", texto: "Mariana, seu processo já está protocolado no INSS pelo jurídico!" },
@@ -2041,9 +2077,9 @@ Data: ${new Date().toLocaleDateString('pt-BR')}`;
         alert("Nenhum lead disponível.");
         return;
       }
-      let csv = "ID;Data;Nome;WhatsApp;Mes_Parto;Situacao;Estagio;Beneficio;ComissaoBruta;DiagnosticoIA\n";
+      let csv = "ID;Data;Nome;WhatsApp;Mes_Parto;Situacao;Estagio;BeneficioLiquido;Honorarios;DiagnosticoIA\n";
       currentLeads.forEach(l => {
-        csv += `"${l.id}";"${new Date(l.data).toLocaleDateString('pt-BR')}";"${l.nome}";"${l.whatsapp}";"${l.partoMes}";"${l.situacao}";"${l.status}";"${l.contrato?.valorBeneficio || 6484}";"${l.contrato?.valorComissao || 1945.20}";"${l.aiDiagnosis?.ondeParou || ''}"\n`;
+        csv += `"${l.id}";"${new Date(l.data).toLocaleDateString('pt-BR')}";"${l.nome}";"${l.whatsapp}";"${l.partoMes}";"${l.situacao}";"${l.status}";"${l.contrato?.valorBeneficio || 5772}";"${l.contrato?.valorComissao || 1731.00}";"${l.aiDiagnosis?.ondeParou || ''}"\n`;
       });
       const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
       const link = document.createElement("a");

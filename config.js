@@ -30,13 +30,19 @@ const MATERNA_CONFIG = {
   // Pixel do Facebook / Meta Ads Oficial
   metaPixelId: "1795208765028584",
 
-  // Estimativa de valor do benefício auditado pela especialista (4x R$ 1.621,00)
-  benefitValue: "R$ 6.484,00 (4x de R$ 1.621,00)",
-  parcelValue: 1621.00,
-  totalBenefitValue: 6484.00,
-  commissionPercentage: 30, // 30% no êxito
-  estimatedCommission: 1945.20, // R$ 1.945,20 por contrato
-  inssContributionCost: 178.90, // Custo da guia avulsa adiantada por Nathália (reembolso integral, fora do lucro)
+  // Estimativa e regra financeira auditada pela especialista (Nathália - Advogada)
+  // O INSS paga 4 parcelas brutas de R$ 1.621,00 com desconto na fonte de R$ 178,00 em cada parcela
+  parcelValue: 1621.00, // Parcela bruta INSS
+  inssDiscountPerParcel: 178.00, // Retenção do INSS por parcela
+  netParcelValue: 1443.00, // Parcela líquida paga à gestante (1.621 - 178 = 1.443)
+  totalBenefitValue: 5772.00, // Total líquido oficial recebido pela gestante (4x R$ 1.443,00)
+  totalGrossBenefitValue: 6484.00, // Total bruto previdenciário (4x R$ 1.621,00)
+  benefitValue: "R$ 5.772,00 Líquido (4x de R$ 1.443,00)",
+
+  commissionPercentage: 30, // 30% cobrado estritamente sobre o valor LÍQUIDO recebido pela cliente
+  estimatedCommission: 1731.00, // Honorários da empresa por contrato (30% de R$ 5.772,00)
+  inssContributionCost: 178.00, // Guia avulsa adiantada por Nathália (reembolso integral para Nathália, fora do lucro)
+  totalClientPayment: 1909.00, // Total pago pela cliente à assessoria: R$ 1.731,00 + R$ 178,00 = R$ 1.909,00
   mediaCostPerContract: 200.00, // Custo médio de tráfego/anúncios investido por Kadu (reembolso integral para Kadu ANTES do lucro)
 
   // Divisão de Lucro Líquido REAL entre os Sócios / Parceiros (após deduzir a Verba de Mídia)
