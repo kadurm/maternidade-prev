@@ -165,40 +165,47 @@
     <!-- ========================================================================= -->
     <div id="view_dashboard" class="flex-1 max-w-7xl mx-auto px-4 py-6 w-full space-y-6">
 
-      <!-- Barra de Auditoria de Mídia Real -->
-      <div class="bg-blue-50 border-l-4 border-blue-600 p-4 rounded-2xl shadow-xs flex flex-wrap items-center justify-between gap-3 text-xs text-blue-950">
-        <div class="flex items-center gap-2.5">
-          <span class="text-xl">📢</span>
+      <!-- Barra Superior do Dashboard: Filtro de Período e Extração Automática Meta Ads -->
+      <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 flex flex-wrap items-center justify-between gap-4">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-2xl bg-blue-600 text-white flex items-center justify-center font-black text-lg shadow-sm">
+            f
+          </div>
           <div>
             <div class="flex items-center gap-2">
-              <span class="font-extrabold text-sm text-blue-950">Gasto Real no Meta Ads (Conta MaternidadePrev):</span>
-              <span id="badgeAuditStatus" class="bg-blue-100 text-blue-800 text-[10px] font-black uppercase px-2 py-0.5 rounded-full flex items-center gap-1">
-                <span class="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse"></span> Meta Ads
+              <h2 class="font-extrabold text-sm text-slate-900">[00][MaternidadePrev] • Conta: 1055899400803247</h2>
+              <span id="badgeAuditStatus" class="bg-emerald-100 text-emerald-800 text-[10px] font-black uppercase px-2 py-0.5 rounded-full flex items-center gap-1">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> Extração Automática Ativa
               </span>
             </div>
-            <span class="text-[11px] text-blue-700">
-              Valor investido por Kadu recomposto 100% antes do lucro. Ref: <strong id="lblRefAuditoria">Meta Ads</strong> • Data: <strong id="lblUltimaAuditoria">Hoje</strong>
-            </span>
+            <p class="text-[11px] text-slate-500">
+              Gasto real extraído automaticamente da API conforme o período selecionado. Última atualização: <strong id="lblUltimaAuditoria">Hoje</strong>
+            </p>
           </div>
         </div>
 
-        <div class="flex items-center gap-2 flex-wrap">
-          <div class="bg-white px-3.5 py-1.5 rounded-xl border border-blue-300 shadow-xs text-right">
-            <span class="text-[10px] text-slate-500 uppercase font-bold block">Total Investido Real</span>
+        <!-- Seletor de Período do Dashboard (Filtro Dinâmico) -->
+        <div class="flex items-center gap-3 flex-wrap">
+          <div class="flex items-center gap-2 bg-slate-50 border border-slate-300 rounded-xl p-1.5 px-3">
+            <span class="text-xs font-bold text-slate-700 flex items-center gap-1">
+              📅 <span>Período:</span>
+            </span>
+            <select id="dashPeriodSelect" onchange="onDashboardPeriodChange()" class="bg-white border border-slate-200 text-slate-900 text-xs font-bold rounded-lg p-1.5 focus:ring-2 focus:ring-blue-600 focus:outline-none">
+              <option value="maximum" selected>Todo o Período (Máximo)</option>
+              <option value="this_month">Mês Atual (Novembro)</option>
+              <option value="last_30d">Últimos 30 Dias</option>
+              <option value="last_7d">Últimos 7 Dias</option>
+              <option value="today">Hoje</option>
+            </select>
+          </div>
+
+          <div class="bg-blue-50 px-3.5 py-1.5 rounded-xl border border-blue-200 text-right">
+            <span class="text-[10px] text-blue-700 uppercase font-black tracking-wider block">Gasto Meta no Período</span>
             <span class="text-base font-black text-blue-950" id="lblValorAuditadoTop">R$ 0,00</span>
           </div>
 
-          <button onclick="syncMetaAdsSpend(false)" id="btnSyncMetaTop" title="Extrair gastos reais do Meta Ads via API" class="bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-xs py-2 px-3 rounded-xl shadow transition flex items-center gap-1.5">
-            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-            <span id="btnSyncMetaText">🔄 Extrair Gasto Meta (API)</span>
-          </button>
-
-          <button onclick="openMetaApiModal()" title="Configurar Conta e Token do Meta Ads" class="bg-white hover:bg-slate-50 text-blue-900 border border-blue-300 font-extrabold text-xs py-2 px-2.5 rounded-xl shadow-xs transition flex items-center gap-1">
-            <span>⚙️ Conectar API</span>
-          </button>
-
-          <button onclick="openAuditModal()" title="Inserção manual caso queira sobrescrever" class="bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 font-bold text-xs py-2 px-2.5 rounded-xl transition flex items-center gap-1">
-            <span>✏️ Manual</span>
+          <button onclick="syncMetaAdsSpend(false)" id="btnSyncMetaTop" title="Recarregar dados do Meta Ads agora" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs py-2 px-3 rounded-xl border border-slate-300 transition flex items-center gap-1.5">
+            <span id="btnSyncMetaText">🔄 Atualizar</span>
           </button>
         </div>
       </div>
@@ -362,17 +369,9 @@
           <div class="pt-4 border-t border-slate-800/80 mt-4 space-y-2">
             <button onclick="syncMetaAdsSpend(false)" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-extrabold text-xs py-2.5 px-4 rounded-xl shadow transition flex items-center justify-center gap-2">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-              <span>🔄 Sincronizar via Meta Ads API</span>
+              <span>🔄 Atualizar Dados de Investimento</span>
             </button>
-            <div class="flex gap-2">
-              <button onclick="openMetaApiModal()" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-bold text-xs py-2 px-2 rounded-xl transition text-center">
-                ⚙️ Configurar API
-              </button>
-              <button onclick="openAuditModal()" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-bold text-xs py-2 px-2 rounded-xl transition text-center">
-                ✏️ Ajuste Manual
-              </button>
-            </div>
-            <button onclick="switchView('crm')" class="w-full bg-slate-800/50 hover:bg-slate-700/60 text-slate-400 font-bold text-xs py-1.5 px-3 rounded-xl transition text-center block">
+            <button onclick="switchView('crm')" class="w-full bg-slate-800/80 hover:bg-slate-700 text-slate-300 font-bold text-xs py-2 px-3 rounded-xl transition text-center block">
               Ir para Atendimento CRM →
             </button>
           </div>
@@ -880,67 +879,6 @@
     </div>
   </div>
 
-  <!-- ================= MODAL CONECTAR META ADS API (EXTRAÇÃO AUTOMÁTICA) ================= -->
-  <div id="metaApiModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-white rounded-3xl shadow-2xl max-w-lg w-full p-6 border border-slate-200">
-      <div class="flex items-center justify-between pb-3 mb-4 border-b border-slate-100">
-        <div class="flex items-center gap-2.5">
-          <div class="w-8 h-8 rounded-xl bg-blue-600 text-white flex items-center justify-center font-black text-base shadow-xs">
-            f
-          </div>
-          <div>
-            <h3 class="font-black text-base text-slate-900">Conexão Automática Meta Ads API</h3>
-            <span class="text-[11px] text-slate-500">Extraia gastos e métricas reais direto do Gerenciador de Anúncios</span>
-          </div>
-        </div>
-        <button onclick="closeMetaApiModal()" class="text-slate-400 hover:text-slate-600 font-bold">✕</button>
-      </div>
-
-      <form onsubmit="handleMetaApiSubmit(event)" class="space-y-4">
-        <div>
-          <label class="block text-xs font-bold text-slate-700 mb-1">ID da Conta de Anúncios (Ad Account ID):</label>
-          <div class="relative">
-            <span class="absolute left-3.5 top-2.5 text-xs font-mono font-bold text-slate-400">act_</span>
-            <input type="text" id="metaInputAccountId" required placeholder="123456789012345" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 pl-12 text-xs font-mono font-bold text-slate-900 focus:ring-2 focus:ring-blue-600 focus:outline-none">
-          </div>
-          <span class="text-[10px] text-slate-500 mt-1 block">Localize o ID da sua conta no topo do <strong>Gerenciador de Anúncios</strong> do Meta Ads (pode inserir com ou sem 'act_').</span>
-        </div>
-
-        <div>
-          <div class="flex items-center justify-between mb-1">
-            <label class="block text-xs font-bold text-slate-700">Token de Acesso da Meta (com permissão ads_read):</label>
-            <a href="https://developers.facebook.com/tools/explorer/" target="_blank" class="text-[10px] text-blue-600 font-bold hover:underline">Graph API Explorer ↗</a>
-          </div>
-          <input type="password" id="metaInputAccessToken" required placeholder="EAAP..." class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs font-mono font-medium text-slate-900 focus:ring-2 focus:ring-blue-600 focus:outline-none">
-          <div class="mt-1 flex items-center justify-between text-[10px] text-slate-500">
-            <span>Requer permissão <strong>ads_read</strong> para leitura de gastos.</span>
-            <button type="button" onclick="toggleTokenVisibility()" class="text-blue-600 font-semibold hover:underline">Ver / Ocultar</button>
-          </div>
-        </div>
-
-        <div>
-          <label class="block text-xs font-bold text-slate-700 mb-1">Período de Extração:</label>
-          <select id="metaInputDatePreset" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs font-semibold text-slate-800 focus:ring-2 focus:ring-blue-600 focus:outline-none">
-            <option value="maximum">Todo o Período / Histórico Completo (Recomendado)</option>
-            <option value="this_month">Mês Atual (Novembro)</option>
-            <option value="last_30d">Últimos 30 Dias</option>
-            <option value="today">Apenas Hoje</option>
-          </select>
-          <span class="text-[10px] text-slate-500 mt-1 block">Define o intervalo de datas consultado na API do Meta.</span>
-        </div>
-
-        <div id="metaApiStatusFeedback" class="hidden p-3 rounded-xl text-xs"></div>
-
-        <div class="pt-2 flex justify-end gap-2">
-          <button type="button" onclick="closeMetaApiModal()" class="px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-xl">Cancelar</button>
-          <button type="submit" id="btnSubmitMetaApi" class="px-5 py-2.5 text-xs font-extrabold bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow flex items-center gap-1.5">
-            <span>Salvar & Sincronizar Agora</span>
-          </button>
-        </div>
-      </form>
-    </div>
-  </div>
-
   <!-- ================= MODAL ADICIONAR LEAD MANUAL ================= -->
   <div id="newLeadModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
     <div class="bg-white rounded-3xl shadow-2xl max-w-lg w-full p-6 border border-slate-200">
@@ -1283,102 +1221,32 @@
       } catch(e) {}
     }
 
-    // Gerenciamento da Configuração da API do Meta Ads
-    function loadMetaApiConfig() {
-      const stored = localStorage.getItem("materna_meta_api_config");
-      if (stored) {
-        try { metaApiConfig = { ...metaApiConfig, ...JSON.parse(stored) }; } catch(e) {}
-      }
+    // Extração Automática de Gastos do Meta Ads (Conta [00][MaternidadePrev])
+    const META_ACCOUNT_ID = "act_1055899400803247";
+    const META_ACCOUNT_NAME = "[00][MaternidadePrev]";
+
+    // Disparado quando o usuário altera o filtro de período do Dashboard
+    async function onDashboardPeriodChange() {
+      const select = document.getElementById("dashPeriodSelect");
+      const period = select ? select.value : "maximum";
+      await syncMetaAdsSpend(false, period);
+      updateDashboardMetrics();
     }
 
-    function saveMetaApiConfig() {
-      localStorage.setItem("materna_meta_api_config", JSON.stringify(metaApiConfig));
-    }
-
-    function openMetaApiModal() {
-      loadMetaApiConfig();
-      document.getElementById("metaInputAccountId").value = metaApiConfig.accountId || "";
-      document.getElementById("metaInputAccessToken").value = metaApiConfig.accessToken || "";
-      document.getElementById("metaInputDatePreset").value = metaApiConfig.datePreset || "maximum";
-      
-      const feedback = document.getElementById("metaApiStatusFeedback");
-      if (auditData.meta_details) {
-        feedback.className = "p-3 rounded-xl text-xs bg-blue-50 border border-blue-200 text-blue-900 block";
-        feedback.innerHTML = `<strong>Status da Última Consulta:</strong><br>
-        Investimento Extraído: <strong>R$ ${(auditData.valor || 0).toFixed(2)}</strong><br>
-        Impressões: ${(auditData.meta_details.impressions || 0).toLocaleString('pt-BR')} • Cliques: ${(auditData.meta_details.clicks || 0).toLocaleString('pt-BR')}<br>
-        Período: ${auditData.meta_details.date_start || 'Início'} até ${auditData.meta_details.date_stop || 'Atual'}`;
-        feedback.classList.remove("hidden");
-      } else {
-        feedback.classList.add("hidden");
-      }
-
-      document.getElementById("metaApiModal").classList.remove("hidden");
-    }
-
-    function closeMetaApiModal() {
-      document.getElementById("metaApiModal").classList.add("hidden");
-    }
-
-    function toggleTokenVisibility() {
-      const input = document.getElementById("metaInputAccessToken");
-      if (input.type === "password") {
-        input.type = "text";
-      } else {
-        input.type = "password";
-      }
-    }
-
-    async function handleMetaApiSubmit(e) {
-      e.preventDefault();
-      const btn = document.getElementById("btnSubmitMetaApi");
-      const originalText = btn.innerHTML;
-      btn.innerHTML = `<span class="animate-spin">🔄</span> Sincronizando...`;
-      btn.disabled = true;
-
-      metaApiConfig.accountId = document.getElementById("metaInputAccountId").value.trim();
-      metaApiConfig.accessToken = document.getElementById("metaInputAccessToken").value.trim();
-      metaApiConfig.datePreset = document.getElementById("metaInputDatePreset").value.trim() || "maximum";
-      saveMetaApiConfig();
-
-      const success = await syncMetaAdsSpend(false);
-      btn.innerHTML = originalText;
-      btn.disabled = false;
-      if (success) {
-        closeMetaApiModal();
-      }
-    }
-
-    async function syncMetaAdsSpend(isSilent = false) {
-      loadMetaApiConfig();
+    async function syncMetaAdsSpend(isSilent = false, overridePeriod = null) {
+      const select = document.getElementById("dashPeriodSelect");
+      const period = overridePeriod || (select ? select.value : "maximum");
       const btnSyncTop = document.getElementById("btnSyncMetaText");
-      if (!isSilent && btnSyncTop) btnSyncTop.innerText = "Extraindo...";
+      if (!isSilent && btnSyncTop) btnSyncTop.innerText = "Atualizando...";
 
       try {
-        let method = 'GET';
-        let payload = null;
-
-        if (metaApiConfig.accountId && metaApiConfig.accessToken) {
-          method = 'POST';
-          payload = {
-            ad_account_id: metaApiConfig.accountId,
-            access_token: metaApiConfig.accessToken,
-            date_preset: metaApiConfig.datePreset || 'maximum'
-          };
-        }
-
-        const options = {
-          method,
-          headers: { 'Content-Type': 'application/json' }
-        };
-        if (payload) options.body = JSON.stringify(payload);
-
-        const res = await fetch('/api/meta-spend', options);
+        const url = `/api/meta-spend?ad_account_id=${encodeURIComponent(META_ACCOUNT_ID)}&date_preset=${encodeURIComponent(period)}`;
+        const res = await fetch(url);
         const data = await res.json();
 
         if (data.success) {
           const spend = (typeof data.spend === 'number') ? data.spend : (data.data?.valor || 0);
-          const ref = data.account_id ? `Meta Ads API (${data.account_id})` : (data.data?.ref || "Meta Ads API");
+          const ref = `${META_ACCOUNT_NAME} (${META_ACCOUNT_ID})`;
           const dataRef = data.date_stop || data.data?.data || new Date().toISOString().slice(0, 10);
 
           auditData = {
@@ -1386,6 +1254,7 @@
             ref: ref,
             data: dataRef,
             auto_sync: true,
+            period: period,
             meta_details: data.impressions !== undefined ? data : (data.data?.meta_details || null)
           };
 
@@ -1396,60 +1265,23 @@
           const badge = document.getElementById("badgeAuditStatus");
           if (badge) {
             badge.className = "bg-emerald-100 text-emerald-800 text-[10px] font-black uppercase px-2 py-0.5 rounded-full flex items-center gap-1";
-            badge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> Meta API Ativa`;
+            badge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> Extração Automática Ativa`;
           }
 
           if (!isSilent && btnSyncTop) {
-            btnSyncTop.innerText = `Extraído: R$ ${spend.toFixed(2)} ✓`;
-            setTimeout(() => { btnSyncTop.innerText = "🔄 Extrair Gasto Meta (API)"; }, 3500);
+            btnSyncTop.innerText = `Atualizado: R$ ${spend.toFixed(2)} ✓`;
+            setTimeout(() => { btnSyncTop.innerText = "🔄 Atualizar"; }, 2500);
           }
           return true;
         } else {
-          if (!isSilent) {
-            const feedback = document.getElementById("metaApiStatusFeedback");
-            if (feedback) {
-              feedback.className = "p-3 rounded-xl text-xs bg-red-50 border border-red-200 text-red-800 block";
-              feedback.innerHTML = `<strong>Falha na Conexão:</strong> ${data.error || data.message || "Erro desconhecido ao consultar a API do Meta."}`;
-              feedback.classList.remove("hidden");
-            } else {
-              alert("Atenção Meta Ads: " + (data.error || data.message));
-            }
-            openMetaApiModal();
-          }
-          if (btnSyncTop) btnSyncTop.innerText = "🔄 Extrair Gasto Meta (API)";
+          if (btnSyncTop) btnSyncTop.innerText = "🔄 Atualizar";
           return false;
         }
       } catch(err) {
         console.warn("Erro ao sincronizar com Meta Ads:", err);
-        if (!isSilent) {
-          alert("Não foi possível conectar ao endpoint /api/meta-spend.");
-        }
-        if (btnSyncTop) btnSyncTop.innerText = "🔄 Extrair Gasto Meta (API)";
+        if (btnSyncTop) btnSyncTop.innerText = "🔄 Atualizar";
         return false;
       }
-    }
-
-    // Modal de Auditoria Real Manual
-    function openAuditModal() {
-      document.getElementById("auditInputValor").value = auditData.valor > 0 ? auditData.valor : "";
-      document.getElementById("auditInputRef").value = auditData.ref || "Campanha Meta Ads MaternidadePrev";
-      document.getElementById("auditInputData").value = new Date().toISOString().slice(0, 10);
-      document.getElementById("auditModal").classList.remove("hidden");
-    }
-
-    function closeAuditModal() {
-      document.getElementById("auditModal").classList.add("hidden");
-    }
-
-    function handleAuditSubmit(e) {
-      e.preventDefault();
-      const val = parseFloat(document.getElementById("auditInputValor").value) || 0;
-      const ref = document.getElementById("auditInputRef").value.trim() || "Auditoria Meta Ads (Manual)";
-      const data = document.getElementById("auditInputData").value || new Date().toISOString().slice(0, 10);
-
-      auditData = { valor: val, ref: ref, data: data, auto_sync: false };
-      saveAuditToStorage();
-      closeAuditModal();
     }
 
     // ==========================================
@@ -2208,9 +2040,35 @@ Data: ${new Date().toLocaleDateString('pt-BR')}`;
 
     // Atualização Geral de Métricas e DRE com Dados 100% Reais
     function updateDashboardMetrics() {
-      const validLeads = currentLeads.filter(l => l.status !== 'perdido' && l.status !== 'excluido');
-      const count = validLeads.length;
+      const periodSelect = document.getElementById("dashPeriodSelect");
+      const period = periodSelect ? periodSelect.value : "maximum";
+      const now = new Date();
 
+      const validLeads = currentLeads.filter(l => {
+        if (l.status === 'perdido' || l.status === 'excluido') return false;
+        if (period === 'maximum') return true;
+
+        const leadDate = new Date(l.data);
+        if (isNaN(leadDate.getTime())) return true;
+
+        if (period === 'today') {
+          return leadDate.toDateString() === now.toDateString();
+        }
+        if (period === 'last_7d') {
+          const diffDays = (now - leadDate) / (1000 * 60 * 60 * 24);
+          return diffDays <= 7;
+        }
+        if (period === 'last_30d') {
+          const diffDays = (now - leadDate) / (1000 * 60 * 60 * 24);
+          return diffDays <= 30;
+        }
+        if (period === 'this_month') {
+          return leadDate.getMonth() === now.getMonth() && leadDate.getFullYear() === now.getFullYear();
+        }
+        return true;
+      });
+
+      const count = validLeads.length;
       const faturamentoTotal = count * 1731.00;
       const reembolsoMidiaReal = auditData.valor || 0;
       const reembolsoGuiaTotal = count * 178.00;

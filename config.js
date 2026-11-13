@@ -29,7 +29,8 @@ const MATERNA_CONFIG = {
 
   // Pixel do Facebook / Meta Ads Oficial
   metaPixelId: "1795208765028584",
-  metaAdAccountId: "", // ID da Conta de Anúncios Meta Ads (ex: "act_1234567890")
+  metaAdAccountId: "act_1055899400803247", // Identificação da conta de anúncios
+  metaAdAccountName: "[00][MaternidadePrev]",
 
   // Estimativa e regra financeira auditada pela especialista (Nathália - Advogada)
   // O INSS paga 4 parcelas brutas de R$ 1.621,00 com desconto na fonte de R$ 178,00 em cada parcela
